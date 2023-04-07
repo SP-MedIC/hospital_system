@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>331227905050-4ic9ko5figfo60lk027vkuibbqt1ok6v.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.331227905050-4ic9ko5figfo60lk027vkuibbqt1ok6v</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAl4XJOX8i5VDksdljIUnWPnq_KmYIAs3U</string>
+	<key>GCM_SENDER_ID</key>
+	<string>331227905050</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.hospitalSystem</string>
+	<key>PROJECT_ID</key>
+	<string>medic-app-1705e</string>
+	<key>STORAGE_BUCKET</key>
+	<string>medic-app-1705e.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:331227905050:ios:5bd045a0c560ad30ac25a3</string>
+	<key>DATABASE_URL</key>
+	<string>https://medic-app-1705e-default-rtdb.asia-southeast1.firebasedatabase.app</string>
+</dict>
+</plist>
