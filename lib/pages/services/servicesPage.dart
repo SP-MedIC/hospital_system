@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hospital_system/constants/controllers.dart';
 import 'package:hospital_system/helpers/responsiveness.dart';
+import 'package:hospital_system/pages/services/widgets/services_info.dart';
 import 'package:hospital_system/widgets/custom_text.dart';
 
 import '../../constants/style.dart';
@@ -30,7 +31,13 @@ class ServicesPage extends StatelessWidget {
               )
             ],
           ),
-        ))
+        )),
+        Expanded(
+            child: Container(
+              padding: EdgeInsets.only(top:50, left:50),
+              child: ServicesInformation(),
+            )
+        ),
       ],
     );
   }

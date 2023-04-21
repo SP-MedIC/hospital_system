@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hospital_system/constants/style.dart';
+import 'package:hospital_system/controllers/authentication_controller.dart';
 import 'package:hospital_system/controllers/menu_controller.dart';
 import 'package:hospital_system/controllers/navigation_controller.dart';
 import 'package:hospital_system/layout.dart';
@@ -26,6 +27,7 @@ void main() async{
   );
   Get.put(CustomMenuController());
   Get.put(NavigationController());
+  Get.put(LoginController());
   runApp(const MyApp());
 }
 
@@ -38,20 +40,25 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       initialRoute: authenticationPageRoute,
       getPages: [
+        GetPage(name: authenticationPageRoute, page: () => GetBuilder<LoginController>(
+        builder: (loginController) {
+          if (loginController.isLoggedIn.value) {
+            // Show Home Page if logged in
+            return Sitelayout();
+          } else {
+            // Show Login Page if not logged in
+            return LoginPage();
+          }
+        },
+      )
+      //binding: LoginBinding(),
+    ),
         GetPage(name: rootRoute, page: (){
-          return Scaffold(
-            body: StreamBuilder<User?>(
-              stream: FirebaseAuth.instance.authStateChanges(),
-              builder: (context, snapshot){
-                if (snapshot.hasData){
-                  return Sitelayout();
-                }else {
-                  return LoginPage();
-                }
-              },
-            ),
-          );
-        }), //GetPage(name: authenticationPageRoute, page: () => AuthenticationPage()),
+          return Sitelayout();
+        },
+          //binding: HomeBinding(),
+        ),
+
       ],
       debugShowCheckedModeBanner: false,
       title: 'MedIC',
@@ -61,15 +68,24 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.mulishTextTheme(
             Theme.of(context).textTheme
         ).apply(
-          bodyColor: Colors.black45,
+          bodyColor: Colors.black,
         ),
         pageTransitionsTheme: PageTransitionsTheme(builders: {
           TargetPlatform.iOS: FadeUpwardsPageTransitionsBuilder(),
           TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
         }),
-        primaryColor: Colors.blue,
+        primaryColor: Colors.indigoAccent,
       ),
     );
+  }
+}
+
+
+class LoginBinding extends Bindings {
+  @override
+  void dependencies() {
+    // Bind LoginController to its corresponding class
+    Get.put(LoginController());
   }
 }
 

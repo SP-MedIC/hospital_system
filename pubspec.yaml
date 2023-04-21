@@ -45,6 +45,9 @@ dependencies:
   firebase_storage: ^11.0.16
   google_fonts: ^4.0.3
   data_table_2: ^2.4.1
+  geolocator: ^9.0.2
+  geocoding: ^2.1.0
+  dio: ^4.0.0
   #firebase_core: ^2.8.0
   #firebase_core_desktop: ^1.0.2
 

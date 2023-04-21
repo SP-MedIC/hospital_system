@@ -55,13 +55,13 @@ class _LiveDateTimeScreenState extends State<LiveDateTimeScreen> {
         children: [
           Container(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.only(top: 10.0),
               child: Column(
                 children: [
                   Text(
                     timeText,
                     style: const TextStyle(
-                      fontSize: 50,
+                      fontSize: 40,
                       color:Colors.black,
                       letterSpacing: 3,
                       fontWeight: FontWeight.bold,
@@ -71,7 +71,7 @@ class _LiveDateTimeScreenState extends State<LiveDateTimeScreen> {
                   Text(
                     dateText,
                     style: const TextStyle(
-                      fontSize: 30,
+                      fontSize: 20,
                       color:Colors.black,
                       letterSpacing: 3,
                       fontWeight: FontWeight.bold,

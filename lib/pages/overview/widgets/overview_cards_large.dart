@@ -50,7 +50,7 @@ class _OverViewCardsLargeScreenState extends State<OverViewCardsLargeScreen> {
         }
 
         final userData = snapshot.data!.data() as Map<String, dynamic>;
-        final services = userData['services'] as Map<String, dynamic>;
+        final services = userData['use_services'] as Map<String, dynamic>;
         //final servicesList = services.values.toList();
 
         return Column(
@@ -62,23 +62,19 @@ class _OverViewCardsLargeScreenState extends State<OverViewCardsLargeScreen> {
                   padding: const EdgeInsets.only(left: 100),
                   child: Row(
                     children: [
-                      buildCard("Ambulance", services['ambulance'].toString(), Colors.orange ),
+                      buildCard("Emergency Room", services['Emergency Room']['availability'].toString(), Colors.redAccent ),
                       SizedBox(
                         width: _width/64,
                       ),
-                      buildCard("Emergency Room", services['emergency_room'].toString(), Colors.redAccent ),
+                      buildCard("General Ward", services['General Ward']['availability'].toString(), Colors.lightBlueAccent ),
                       SizedBox(
                         width: _width/64,
                       ),
-                      buildCard("General Ward", services['general_ward'].toString(), Colors.lightBlueAccent ),
+                      buildCard("Private Rooms", services['Private Room']['availability'].toString(), Colors.greenAccent ),
                       SizedBox(
                         width: _width/64,
                       ),
-                      buildCard("Private Rooms", services['private_ward'].toString(), Colors.greenAccent ),
-                      SizedBox(
-                        width: _width/64,
-                      ),
-                      buildCard("Maternal Ward", services['maternal_ward'].toString(), Colors.yellow ),
+                      buildCard("Operating Room", services['Operating Room']['availability'].toString(), Colors.yellow ),
                       SizedBox(
                         width: _width/64,
                       ),

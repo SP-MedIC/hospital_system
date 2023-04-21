@@ -6,7 +6,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
-import 'package:hospital_system/controllers/authentication_controller.dart';
 import 'package:hospital_system/layout.dart';
 import 'package:hospital_system/pages/authentication/login_page.dart';
 import 'package:hospital_system/pages/general_screen.dart';
@@ -109,8 +108,7 @@ class _EditSettingsState extends State<EditSettings> {
 
   Future submit() async {
     //if(passwordConfirmed()){
-      //String uid = FirebaseAuth.instance.currentUser!.uid;
-    final LoginController loginController = Get.find();
+    //String uid = FirebaseAuth.instance.currentUser!.uid;
     String email = FirebaseAuth.instance.currentUser!.email!;
     print(email);
     FirebaseFirestore.instance.collection('hospitals').doc(currentUser!.uid).update({
@@ -123,14 +121,13 @@ class _EditSettingsState extends State<EditSettings> {
       'Pic_url': _profilePictureUrl,
 
     });
-      //Get.offAndToNamed(authenticationPageRoute);
+    //Get.offAndToNamed(authenticationPageRoute);
     //}
 
-    if (currentUser != null) {
-      // signed in
-      if (!mounted) return;
-      loginController.doLogout();
-    }
+    //if (currentUser != null) {
+    // signed in
+    //  if (!mounted) return;
+    //  Get.offAndToNamed(authenticationPageRoute);
     //} else {
     //  if (!mounted) return;
     //  Navigator.pop(context as BuildContext);
@@ -342,7 +339,7 @@ class _EditSettingsState extends State<EditSettings> {
                             submit();
                           }
                         },
-                        child: const Text('Submit',
+                        child: const Text('Update',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 15.0,

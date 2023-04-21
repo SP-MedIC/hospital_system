@@ -53,11 +53,6 @@ class SideMenu extends StatelessWidget {
                 .map((item) => SideMenuItem(
                 itemName: item.name,
                 onTap: () {
-                  if(item.route == authenticationPageRoute){
-                    Get.offAllNamed(authenticationPageRoute);
-                    menuController.changeActiveitemTo(overviewPageDisplayName);
-
-                  }
                   if (!menuController.isActive(item.name)) {
                     menuController.changeActiveitemTo(item.name);
                     if(ResponsiveWidget.isSmallScreen(context))

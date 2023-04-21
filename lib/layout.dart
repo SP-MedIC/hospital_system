@@ -15,7 +15,8 @@ class Sitelayout extends StatefulWidget {
 
 class _SitelayoutState extends State<Sitelayout> {
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
-  String myString= "";
+  String name= "";
+  String pic_url= "";
 
   @override
   void initState() {
@@ -30,10 +31,12 @@ class _SitelayoutState extends State<Sitelayout> {
         .doc(currentUser!.uid)
         .get();
     final String currentUserName = currentUserDoc.data()!['Name'];
+    final String pic = currentUserDoc.data()!['Pic_url'];
 
     setState(() {
       // Update the state with the fetched string value
-      myString = currentUserName.toString();
+      name = currentUserName.toString();
+      pic_url = pic;
     });
   }
 
@@ -42,7 +45,7 @@ class _SitelayoutState extends State<Sitelayout> {
     return Scaffold(
       key: scaffoldKey,
       extendBodyBehindAppBar: true,
-      appBar: topNavigationBar(context, scaffoldKey, myString),
+      appBar: topNavigationBar(context, scaffoldKey, name, pic_url),
       drawer: Drawer(child: SideMenu()),
       body: ResponsiveWidget(largeScreen: LargeScreen(), smallScreen: SmallScreen(), mediumScreen: MediumScreen(),),
     );

@@ -43,10 +43,8 @@ class _OverviewPageState extends State<OverviewPage> {
           ),
         );
         }),
-        Expanded(
-            child: Container(
-              child: LiveDateTimeScreen(),
-            )
+        Container(
+          child: LiveDateTimeScreen(),
         ),
         Expanded(
             child: ListView(
@@ -62,32 +60,26 @@ class _OverviewPageState extends State<OverviewPage> {
               ],
             )
         ),
-        SizedBox(
-          height: 6,
-        ),
         Expanded(
             child: Container(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: 10,
-                        ),
-                        CustomText(
-                          text: "Requesting Patients",
-                          color: lightGrey,
-                          weight: FontWeight.bold,
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 5,),
-                    Container(
-                      child: RequestingPatients(),
-                    ),
-                  ],
-                ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 10,
+                      ),
+                      CustomText(
+                        text: "Requesting Patients",
+                        color: lightGrey,
+                        weight: FontWeight.bold,
+                      ),
+                    ],
+                  ),
+                  Container(
+                    child: RequestingPatients(),
+                  ),
+                ],
               ),
             )
         )

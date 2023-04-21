@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:hospital_system/controllers/authentication_controller.dart';
 import 'package:hospital_system/pages/authentication/signup_page.dart';
 import 'package:hospital_system/pages/general_screen.dart';
 
@@ -43,6 +45,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+
+    // Bind the LoginController to the HomePage
+    final LoginController loginController = Get.find();
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -147,13 +153,7 @@ class _LoginPageState extends State<LoginPage> {
                               side: const BorderSide(color: Color(0xFFba181b)),
                             ),
                             onPressed: () {
-                              logIn();
-                              // if (_formKey.currentState!.validate()){
-                              //   Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
-                              //   // ScaffoldMessenger.of(context).showSnackBar(
-                              //   //   const SnackBar(content: Text('Processing Data')),
-                              //   // );
-                              // }
+                              loginController.doLogin(emailController.text.trim(),passwordController.text.trim());
                             },
                             child: const Text('LOGIN',
                               style: TextStyle(
@@ -161,31 +161,9 @@ class _LoginPageState extends State<LoginPage> {
                                 fontSize: 18.0,
                                 letterSpacing: 1.5,
                                 fontWeight: FontWeight.bold,
-                              ),),
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              "Don't have an account yet?",
-                              style: TextStyle(
-                                fontSize: 18.0,
-                                color: Colors.black,
-                              ),),
-                            RawMaterialButton(
-                              constraints: const BoxConstraints(),
-                              onPressed: (){
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => const SignupPage()));
-                              },
-                              child: const Text(' Sign Up',
-                                style: TextStyle(
-                                  color: Color(0xFFba181b),
-                                  fontSize: 18.0,
-                                ),
                               ),
                             ),
-                          ],
+                          ),
                         ),
                       ],
                     ),

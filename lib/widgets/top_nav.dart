@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:hospital_system/constants/style.dart';
+import 'package:hospital_system/controllers/authentication_controller.dart';
 import 'package:hospital_system/helpers/responsiveness.dart';
 import 'package:hospital_system/pages/authentication/login_page.dart';
+import 'package:hospital_system/pages/settings/settings.dart';
 import 'package:hospital_system/pages/settings/widgets/edit_setting.dart';
 import 'package:hospital_system/widgets/custom_text.dart';
 
-AppBar topNavigationBar(BuildContext context, GlobalKey<ScaffoldState>key, userName) {
+AppBar topNavigationBar(BuildContext context, GlobalKey<ScaffoldState>key, userName, userImage) {
+
+  final LoginController loginController = Get.find();
+
   return AppBar(
       leading: !ResponsiveWidget.isSmallScreen(context) ?
       Row(
@@ -29,7 +35,7 @@ AppBar topNavigationBar(BuildContext context, GlobalKey<ScaffoldState>key, userN
           Expanded(child: Container(),),
           IconButton(
               onPressed: (){
-                Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+                loginController.doLogout();
               },
               icon: Icon(Icons.exit_to_app, color:darke.withOpacity(.7)),
           ),
@@ -58,8 +64,8 @@ AppBar topNavigationBar(BuildContext context, GlobalKey<ScaffoldState>key, userN
               padding: EdgeInsets.all(12),
               margin: EdgeInsets.all(2),
               child: CircleAvatar(
-                backgroundColor: light,
-                child: Icon(Icons.person, color: darke,),
+                backgroundImage: NetworkImage(userImage),
+                backgroundColor: Colors.transparent,
               ),
             ),
           ),

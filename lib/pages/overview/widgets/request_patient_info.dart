@@ -118,13 +118,10 @@ class CustomDialog extends StatelessWidget {
     try {
       String serviceInUse = '';
       if (doc['Travel Mode'] == 'Ambulance' ) {
-        // Get the license plate number of the ambulance from the current user's document
-        //DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(currentUser.uid).get();
-        //String licensePlateNumber = userDoc['use_service']['ambulance']['license_plate_number'];
         Map<String, dynamic> userDocData =
         (await FirebaseFirestore.instance.collection('hospitals').doc(currentUser.uid).get()).data()!;
 
-        List<dynamic> ambulancesData = userDocData['use_services']['ambulances'];
+        List<dynamic> ambulancesData = userDocData['use_services']['Ambulance']['reg_ambulance'];
 
         String licensePlateNumber = '';
         int ambulanceIndex = 0;
@@ -146,9 +143,9 @@ class CustomDialog extends StatelessWidget {
 
           // Update the ambulance data in the user's document
           await FirebaseFirestore.instance
-              .collection('users')
+              .collection('hospitals')
               .doc(currentUser.uid)
-              .update({'use_services.ambulances': ambulancesData});
+              .update({'use_services.Ambulance.reg_ambulance': ambulancesData});
         } else {
           print('No available ambulance found.');
         }
@@ -168,15 +165,6 @@ class CustomDialog extends StatelessWidget {
             .doc(doc.id)
             .update({'Status': 'accepted'});
       }
-
-      // Add the entire document as a new subdocument of the `patients` collection under the hospital's document
-      //final patientRef = FirebaseFirestore.instance.collection('hospitals').doc(currentUser!.uid).collection('patient');
-      //await patientRef.add(doc.data());
-      //await FirebaseFirestore.instance
-      //    .collection('hospitals')
-      //    .doc(currentUser.uid)
-      //    .collection('patient')
-      //    .add(doc.data());
 
       final userDoc = {
         'Name': doc['Name'],
