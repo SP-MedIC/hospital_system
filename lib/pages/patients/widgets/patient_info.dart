@@ -120,7 +120,7 @@ class _PatientInformationState extends State<PatientInformation> {
 
           // create a DataRow from the data and add it to the list
           final row = DataRow(cells: [
-            DataCell(Center(child: Text(data['Name']))),
+            DataCell(Center(child: Text(data['Name:']))),
             DataCell(Center(child: Text(data['Age'].toString()))),
             DataCell(Center(child: Text(data['Sex']))),
             DataCell(Center(child: Text(data['Birthday']))),

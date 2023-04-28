@@ -19,36 +19,6 @@ class _SettingState extends State<Setting> {
   late String _profilePictureUrl;
 
   @override
-  void initState() {
-    super.initState();
-    // Retrieve current user's information from Firestore and set the initial values
-    // for the form fields
-    getUserProfileInfo();
-  }
-
-  void getUserProfileInfo() async {
-    final user = FirebaseAuth.instance.currentUser;
-    final userData = await FirebaseFirestore.instance.collection('hospitals').doc(user!.uid).get();
-    setState(() {
-      _nameController.text = userData['Name'];
-      _emailController.text = userData['email'];
-      _profilePictureUrl = userData['Pic_url'];
-    });
-  }
-
-  void updateProfileInfo() async {
-    final user = FirebaseAuth.instance.currentUser;
-    await FirebaseFirestore.instance.collection('hospitals').doc(user!.uid).update({
-      'Name': _nameController.text,
-      'email': _emailController.text,
-      'Pic_url': _profilePictureUrl,
-    });
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('Profile information updated successfully.'),
-    ));
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Column(
       children: [

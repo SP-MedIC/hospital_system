@@ -43,6 +43,16 @@ class _EditSettingsState extends State<EditSettings> {
 
   //String imageUrl = '';
   String _profilePictureUrl = "";
+  XFile? _image;
+  XFile? get image => _image;
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool haveAgreed = false;
+  bool isHiddenPassword = true;
+
+  List<String> type = ['Private', 'Public'];
+  String selectedType = 'Public';
+
 
   @override
   void initState() {
@@ -50,11 +60,9 @@ class _EditSettingsState extends State<EditSettings> {
     // Retrieve current user's information from Firestore and set the initial values
     // for the form fields
     getUserProfileInfo();
-    _pickImage();
   }
 
   void getUserProfileInfo() async {
-    //final user = FirebaseAuth.instance.currentUser;
     final userData = await FirebaseFirestore.instance.collection('hospitals').doc(currentUser!.uid).get();
     String email = FirebaseAuth.instance.currentUser!.email!;
     setState(() {
@@ -63,42 +71,38 @@ class _EditSettingsState extends State<EditSettings> {
       numberController.text = userData['Contact_num'];
       addressController.text = userData['Address'];
       emailController.text = email;
-      //_profilePictureUrl = userData['Pic_url'];
+      _profilePictureUrl = userData['Pic_url'].toString();
     });
+    print(_profilePictureUrl);
   }
 
   Future<void> _pickImage() async {
-    //final currentUser = FirebaseAuth.instance.currentUser;
-    PickedFile? pickedImage = await ImagePicker().getImage(source: ImageSource.gallery);
-    if (pickedImage != null) {
-      // Upload the selected image to Firebase Storage
-      File imageFile = File(pickedImage.path);
-      String fileName = basename(imageFile.path);
-      Reference storageRef = FirebaseStorage.instance.ref().child('profile_pictures').child(fileName);
-      UploadTask uploadTask = storageRef.putFile(imageFile);
-      TaskSnapshot snapshot = await uploadTask.whenComplete(() {});
-      String downloadUrl = await snapshot.ref.getDownloadURL();
+    final user = FirebaseAuth.instance.currentUser!.uid;
+    // Open the image picker
+    final pickedFile = await ImagePicker().getImage(source: ImageSource.gallery);
 
-      // Update the Firestore document for the current user with the new image URL
-      await FirebaseFirestore.instance.collection('hospitals').doc(currentUser!.uid).update({
-        'Pic_url': downloadUrl,
+    if (pickedFile != null) {
+      final file = File(pickedFile.path);
+
+      // Create the file metadata
+      final metadata = SettableMetadata(contentType: "image/jpeg");
+      // Upload the image to Firebase storage
+      final storageRef = FirebaseStorage.instance.ref().child('profile_pictures/$user/${DateTime.now().millisecondsSinceEpoch}.jpg');
+      final snapshot = await storageRef.putFile(file,metadata).whenComplete(() {
+        return null;
       });
 
-      // Update the profile picture URL in the widget's state to trigger a re-build and display the new image
+      // Get the URL of the uploaded file
+      final imageUrl = await snapshot.ref.getDownloadURL();
+
+      // Update the _profilePictureUrl state variable with the new URL
       setState(() {
-        _profilePictureUrl = downloadUrl;
+        _profilePictureUrl = imageUrl;
       });
+      print(_profilePictureUrl);
     }
   }
 
-
-
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  bool haveAgreed = false;
-  bool isHiddenPassword = true;
-
-  List<String> type = ['Private', 'Public'];
-  String selectedType = 'Public';
 
   void _togglePassword() {
     setState(() {
@@ -177,12 +181,18 @@ class _EditSettingsState extends State<EditSettings> {
                     ),
                     Center(
                       child: GestureDetector(
-                        onTap: () {
-                          _pickImage(); // Call the _pickImage() function when the profile picture is tapped
+                        onTap: (){
+                          _pickImage();
                         },
                         child: CircleAvatar(
-                          radius: 50.0,
-                          backgroundImage: _profilePictureUrl != null ? NetworkImage(_profilePictureUrl) : null,
+                          radius: 65,
+                          backgroundColor: Colors.transparent,
+                          backgroundImage: _profilePictureUrl.toString() == ""
+                              ? null
+                              : NetworkImage(_profilePictureUrl),
+                          child: _profilePictureUrl.toString() == ""
+                              ? Icon(Icons.add_a_photo, color: Colors.grey[500], size: 35,)
+                              : null,
                         ),
                       ),
                     ),

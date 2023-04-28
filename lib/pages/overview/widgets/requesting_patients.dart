@@ -1,8 +1,11 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:hospital_system/pages/overview/widgets/auto_get_ambulance.dart';
 import 'package:hospital_system/pages/overview/widgets/view_patient_info.dart';
 import 'package:hospital_system/constants/style.dart';
 import 'package:hospital_system/pages/overview/widgets/request_patient_info.dart';
@@ -21,7 +24,23 @@ class _RequestingPatientsState extends State<RequestingPatients> {
   String myString= "";
   String userId = FirebaseAuth.instance.currentUser!.uid;
   final List<DataRow> rows = [];
-  //List<String> listSymptoms = [];
+
+  String userAddress = "";
+  String nearestAmbulance = "";
+  String currentLat = "";
+  String currentLng = "";
+  String travel_mode = "";
+  String triageResult = "";
+  String name = "";
+  String age = "";
+  String sex = "";
+  String birthday = "";
+  String address = "";
+  String concerns = "";
+  String status = "";
+
+  Map<String, dynamic> ambulanceMap = {};
+  List<String> listSymptoms = [];
 
 
   @override
@@ -73,48 +92,44 @@ class _RequestingPatientsState extends State<RequestingPatients> {
   });
   }
 
-  Future<void> acceptPatients(String docId) async{
-    QuerySnapshot paramedics = await FirebaseFirestore.instance
-        .collection('Paramedic_Users')
-        .where('availability', isEqualTo: 'Online')
-        .where('status', isEqualTo: 'Unassigned')
-        .get();
 
-  }
-  Future computeDistance({
-    required String startLatitude,
-    required String startLongitude,
-    required String endLatitude,
-    required String endLongitude,
-    required String trafficModel,
-    required String departureTime,
-  }) async {
-    String url = 'https://maps.googleapis.com/maps/api/distancematrix/json?destinations=$endLatitude,$endLongitude&origins=$startLatitude,$startLongitude&traffic_model=$trafficModel&departure_time=$departureTime&key=AIzaSyAS8T5voHU_bam5GCQIELBbWirb9bCZZOA';
-    //String url = 'https://maps.googleapis.com/maps/api/distancematrix/json?destinations=$destination&origins=$origin&&traffic_model=$trafficModel&departure_time=$departureTime&key=AIzaSyAS8T5voHU_bam5GCQIELBbWirb9bCZZOA';
+  Future<void> createDocument(String? paramedic) async {
+    //final patientDoc = await FirebaseFirestore.instance.collection('hospitals_patients').doc(docId).get();
+    //FirebaseFirestore.instance.collection('hospitals').doc(userId).collection('patient').add(patientDoc as Map<String, dynamic>);
+    FirebaseFirestore.instance
+        .collection('hospitals')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .update({
+      'use_services.Emergency Room.availability': FieldValue.increment(-1),
+    });
 
-    try {
-      var response = await Dio().get(url);
-      if (response.statusCode == 200) {
-        //print(response.data);
-        for (var row in response.data['rows']) {
-          for (var element in row['elements']) {
-            //print(element['duration_in_traffic']['value']);
-            return (element['duration_in_traffic']['value']);
-          }
-        }
-      }
-      else {
-        return;
-      }
-    }
-    catch (e) {
-      print(e);
-    }
+
+
+    FirebaseFirestore.instance.collection('hospitals').doc(userId).collection('patient').add({
+      'Name:': name,
+      'Birthday': birthday,
+      'Sex': sex,
+      'Main Concerns': concerns,
+      'Symptoms': listSymptoms,
+      'Triage Result': triageResult,
+      'Travel Mode': travel_mode,
+      'Age': age,
+      'Address': address,
+      'in_charge': paramedic,
+      'Service in use': "Emergency Room",
+      'Status': status,
+      'Location' : {
+        'Latitude' : currentLat.toString(),
+        'Longitude': currentLng.toString(),
+      },
+      'accepted_at': Timestamp.now(),
+    });
   }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: patients.where('hospital_user_id', isEqualTo: myString).orderBy("triage_result").limit(3).snapshots(),
+      stream: patients.where('hospital_user_id', isEqualTo: myString).where('status', isNotEqualTo: 'accepted').orderBy("triage_result").limit(3).snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
@@ -142,16 +157,17 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                   ],
                   rows: snapshot.data!.docs.map((doc) {
                     final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-                    String triageResult = data['triage_result'].toString();
-                    String name = data['Name:'].toString();
-                    String age = data['Age'].toString();
-                    String sex = data['Sex'].toString();
-                    String birthday = data['Birthday'].toString();
-                    String address = data['Address'].toString();
-                    String concerns = data['Main Concerns'].toString();
-                    String travel_mode = data['Travel Mode'].toString();
-                    String status = data['Status'].toString();
-                    final List<dynamic> symptoms = data['Symptoms'] as List<dynamic>;
+                    triageResult = data['triage_result'].toString();
+                    name = data['Name:'].toString();
+                    age = data['Age'].toString();
+                    sex = data['Sex'].toString();
+                    birthday = data['Birthday'].toString();
+                    address = data['Address'].toString();
+                    concerns = data['Main Concerns'].toString();
+                    travel_mode = data['Travel Mode'].toString();
+                    status = data['Status'].toString();
+                    listSymptoms = List<String>.from(data['Symptoms']);
+                    print(listSymptoms);
 
                     // Return the corresponding string based on the value of "Triage Result"
                     if (triageResult == 'A') {
@@ -171,8 +187,10 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                             builder: (context) => AlertDialog(
                               title: Text("Patient Information"),
                               content: SingleChildScrollView(
-                                scrollDirection: Axis.vertical,
+                                //width: double.maxFinite,
+                                //scrollDirection: Axis.vertical,
                                 child: Column(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Container(child: Text('Name: $name')),
                                     SizedBox(height: 5,),
@@ -186,9 +204,17 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                                     SizedBox(height: 5,),
                                     Text('Main Concerns: $concerns'),
                                     SizedBox(height: 5,),
+                                    Text('Symptoms'),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: listSymptoms != null
+                                          ? listSymptoms.map((s) => Text('- $s')).toList()
+                                          : [Text('No Symptoms added')],
+                                    ),
+                                    SizedBox(height: 5,),
                                     Text('Triage Result: $triageResult'),
                                     SizedBox(height: 5,),
-                                    Text('Triage Result: $travel_mode'),
+                                    Text('Mode of travel: $travel_mode'),
                                     SizedBox(height: 5,),
                                     Text('Status: $status'),
                                     SizedBox(height: 16.0),
@@ -207,7 +233,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                                         .doc(doc.id)
                                         .update(updatedDoc)
                                         .then((value) {
-                                      Navigator.of(context).pop();
+                                      //Navigator.of(context).pop();
                                     }).catchError((error) {
                                       print('Error updating document: $error');
                                     });
@@ -216,47 +242,43 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                                 ),
                                 ElevatedButton(
                                   child: Text('Accept'),
-                                  onPressed: () {
-                                    final currentLat = data['Location']['Latitude'];
-                                    final currentLng = data['Location']['Longitude'];
+                                  onPressed: () async {
+                                    currentLat = data['Location']['Latitude'];
+                                    currentLng = data['Location']['Longitude'];
+                                    print(currentLat);
+                                    //travel_mode = data['Travel Mode'].toString();
 
-                                    final query = FirebaseFirestore.instance
-                                        .collection('Paramedic_Users')
-                                        .where('availability', isEqualTo: 'Online')
-                                        .where('status', isEqualTo: 'Unassigned');
+                                    if(travel_mode == 'AMBULANCE'){
+                                      ambulanceMap = await AutoGetAmbulance(endLat: currentLat, endLng: currentLng).main();
+                                      print("hospital list: $ambulanceMap");
 
-                                    // Sort the documents by distance from the current location
-                                    query.get().then((QuerySnapshot snapshot) {
-                                      // Initialize the shortest distance to a high number
-                                      var shortdistance = double.infinity;
-                                      String nearestPatient = '';
-
-                                      snapshot.docs.forEach((DocumentSnapshot doc) {
-                                        final Map<String, dynamic> paramedicData = doc.data() as Map<String, dynamic>;
-
-                                        // Calculate the distance to the current location
-                                        //final paramedicLat = paramedicData['Location']['Latitude'];
-                                        //final paramedicLng = paramedicData['Location']['Longitude'];
-                                        var distance = computeDistance(
-                                          startLatitude: currentLat,
-                                          startLongitude: currentLng,
-                                          endLatitude: data['Location']['Latitude'],
-                                          endLongitude: data['Location']['Longitude'],
-                                          trafficModel: 'best_guess', //integrates live traffic information
-                                          departureTime: 'now',
-                                        );
-
-                                        // Check if this is the nearest patient so far
-                                        if (distance < shortdistance) {
-                                          shortdistance = distance;
-                                          nearestPatient = paramedicData['Name:'];
+                                      var nearest = ambulanceMap.values.cast<num>().reduce(min);
+                                      ambulanceMap.forEach((key, value) {
+                                        if (value == nearest) {
+                                          nearestAmbulance = key;
                                         }
                                       });
+                                      print(nearestAmbulance.runtimeType);
 
-                                      // Accept the current patient and print the nearest patient's name
-                                      print('Accepted patient: ${data['Name:']}');
-                                      print('Nearest patient: $nearestPatient');
+                                      createDocument(nearestAmbulance);
+                                    }else if (travel_mode == 'PRIVATE VEHICLE'){
+                                      nearestAmbulance = "None";
+                                      createDocument(nearestAmbulance);
+                                    }
+
+                                    final updatedDoc = {
+                                      'Status': 'accepted',
+                                    };
+                                    FirebaseFirestore.instance
+                                        .collection('hospitals_patients')
+                                        .doc(doc.id)
+                                        .update(updatedDoc)
+                                        .then((value) {
+                                      //Navigator.of(context).pop();
+                                    }).catchError((error) {
+                                      print('Error updating document: $error');
                                     });
+
                                     // You can add your logic for accepting the document here
                                     Navigator.of(context).pop();
                                   },

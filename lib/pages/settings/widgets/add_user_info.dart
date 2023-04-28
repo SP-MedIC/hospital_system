@@ -1,10 +1,12 @@
 import 'dart:core';
+import 'dart:html';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:geocode/geocode.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:hospital_system/controllers/authentication_controller.dart';
@@ -46,6 +48,9 @@ class _AddUserInformationState extends State<AddUserInformation> {
   //String imageUrl = '';
   String _profilePictureUrl = "";
   final pattern = RegExp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[,\.])[\sA-Za-z\d,.]+$');
+  String address = "";
+  String latitude = "";
+  String longitude = "";
 
   @override
   void initState() {
@@ -53,34 +58,56 @@ class _AddUserInformationState extends State<AddUserInformation> {
     // Retrieve current user's information from Firestore and set the initial values
     // for the form fields
     //getUserProfileInfo();
-    _pickImage();
+    //_pickImage();
+  }
+  String imgUrl = "";
+
+  uploadToStorage() {
+    final user = FirebaseAuth.instance.currentUser!.uid;
+    FileUploadInputElement input = FileUploadInputElement();
+    input.accept = '.png,.jpg';
+    FirebaseStorage fs = FirebaseStorage.instance;
+    input.click();
+    input.onChange.listen((event) {
+      final file = input.files!.first;
+      final reader = FileReader();
+      reader.readAsDataUrl(file);
+      reader.onLoadEnd.listen((event) async {
+        var snapshot = await fs.ref().child('profile_pictures/$user/${DateTime.now().millisecondsSinceEpoch}').putBlob(file);
+        String downloadUrl = await snapshot.ref.getDownloadURL();
+        setState(() {
+          imgUrl = downloadUrl;
+        });
+      });
+    });
   }
 
-  Future<void> _pickImage() async {
-    //final currentUser = FirebaseAuth.instance.currentUser;
-    PickedFile? pickedImage = await ImagePicker().getImage(source: ImageSource.gallery);
-    if (pickedImage != null) {
-      // Upload the selected image to Firebase Storage
-      File imageFile = File(pickedImage.path);
-      String fileName = basename(imageFile.path);
-      Reference storageRef = FirebaseStorage.instance.ref().child('profile_pictures').child(fileName);
-      UploadTask uploadTask = storageRef.putFile(imageFile);
-      TaskSnapshot snapshot = await uploadTask.whenComplete(() {});
-      String downloadUrl = await snapshot.ref.getDownloadURL();
+  //Future<void> _pickImage() async {
+    //final user = FirebaseAuth.instance.currentUser!.uid;
+    // Open the image picker
+    //final pickedFile = await ImagePicker().getImage(source: ImageSource.gallery);
 
-      // Update the Firestore document for the current user with the new image URL
-      await FirebaseFirestore.instance.collection('hospitals').doc(currentUser!.uid).update({
-        'Pic_url': downloadUrl,
-      });
+    //if (pickedFile != null) {
+      //final file = File(pickedFile.path);
 
-      // Update the profile picture URL in the widget's state to trigger a re-build and display the new image
-      setState(() {
-        _profilePictureUrl = downloadUrl;
-      });
-    }
-  }
+      // Create the file metadata
+      //final metadata = SettableMetadata(contentType: "image/jpeg");
+      // Upload the image to Firebase storage
+      //final storageRef = FirebaseStorage.instance.ref().child('profile_pictures/$user/${DateTime.now().millisecondsSinceEpoch}.jpg');
+      //final snapshot = await storageRef.putFile(file,metadata).whenComplete(() {
+        //return null;
+      //});
 
+      // Get the URL of the uploaded file
+      //final imageUrl = await snapshot.ref.getDownloadURL();
 
+      // Update the _profilePictureUrl state variable with the new URL
+      //setState(() {
+        //_profilePictureUrl = imageUrl;
+      //});
+      //print(_profilePictureUrl);
+    //}
+  //}
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool haveAgreed = false;
@@ -102,9 +129,27 @@ class _AddUserInformationState extends State<AddUserInformation> {
     //String uid = FirebaseAuth.instance.currentUser!.uid;
     String email = FirebaseAuth.instance.currentUser!.email!;
     print(email);
-    List<Location> locations = await locationFromAddress(addressController.text);
-    Location location = locations.first;
-    print("latitude: ${location.latitude}, longitude: ${location.longitude}");
+    GeoCode geoCode = GeoCode();
+    address = addressController.text;
+    print(address);
+    print(address.runtimeType);
+
+    try {
+      Coordinates coordinates = await geoCode.forwardGeocoding(
+          address: address);
+      print("Latitude: ${coordinates.latitude}");
+      print("Longitude: ${coordinates.longitude}");
+      latitude = coordinates.latitude.toString();
+      longitude = coordinates.longitude.toString();
+      print(latitude.runtimeType);
+      print(longitude.runtimeType);
+
+    } catch (e) {
+      print(e);
+    }
+    //List<Location> locations = await locationFromAddress(addressController.text);
+    //Location location = locations.first;
+    //print("latitude: ${location.latitude}, longitude: ${location.longitude}");
     FirebaseFirestore.instance.collection('hospitals').doc(currentUser!.uid).set({
       'Name':nameController.text,
       'email': email,
@@ -112,10 +157,10 @@ class _AddUserInformationState extends State<AddUserInformation> {
       'Contact_num': numberController.text,
       'password':passwordController.text,
       'type':selectedType,
-      'Pic_url': _profilePictureUrl,
+      'Pic_url':imgUrl,
       'Location': {
-        'Latitude': location.latitude,
-        'Longitude': location.longitude,
+        'Latitude': latitude,
+        'Longitude': longitude,
       },
       'use_services':{
         'Emergency Room':{
@@ -198,11 +243,17 @@ class _AddUserInformationState extends State<AddUserInformation> {
                       Center(
                         child: GestureDetector(
                           onTap: () {
-                            _pickImage(); // Call the _pickImage() function when the profile picture is tapped
+                            uploadToStorage(); // Call the _pickImage() function when the profile picture is tapped
                           },
                           child: CircleAvatar(
-                            radius: 50.0,
-                            backgroundImage: _profilePictureUrl != null ? NetworkImage(_profilePictureUrl) : null,
+                            radius: 65,
+                            backgroundColor: Colors.transparent,
+                            backgroundImage: imgUrl.toString() == ""
+                                ? null
+                                : NetworkImage(imgUrl),
+                            child: imgUrl.toString() == ""
+                                ? Icon(Icons.add_a_photo, color: Colors.grey[500], size: 35,)
+                                : null,
                           ),
                         ),
                       ),
@@ -262,9 +313,9 @@ class _AddUserInformationState extends State<AddUserInformation> {
                                 //final pattern = RegExp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[,\.])[\sA-Za-z\d,.]+$');
                                 if (value == null || value.isEmpty) {
                                   return "* Required";
-                                } else if (!pattern.hasMatch(value)) {
-                                  return "Please enter a valid address format (Street, Barangay, Municipality, City, Province, Country)";
-                                }
+                                } //else if (!pattern.hasMatch(value)) {
+                                  //return "Please enter a valid address format (Street, Barangay, Municipality, City, Province, Country)";
+                                //}
                                 return null;
                                 //if(value == null || value.isEmpty){
                                   //return "* Required";
@@ -272,16 +323,16 @@ class _AddUserInformationState extends State<AddUserInformation> {
                                 //return null;
                               },
                             ),
-                            Visibility(
-                              visible: addressController.text.isNotEmpty && !pattern.hasMatch(addressController.text),
-                              child: Text(
-                                "Please enter a valid address format (Street, Barangay, Municipality, City, Province, Country)",
-                                style: TextStyle(
-                                  color: Colors.red,
-                                  fontSize: 12.0,
-                                ),
-                              ),
-                            ),
+                            //Visibility(
+                              //visible: addressController.text.isNotEmpty && !pattern.hasMatch(addressController.text),
+                              //child: Text(
+                                //"Please enter a valid address format (Street, Barangay, Municipality, City, Province, Country)",
+                                //style: TextStyle(
+                                  //color: Colors.red,
+                                  //fontSize: 12.0,
+                                //),
+                              //),
+                            //),
                           ],
                         ),
                       ),

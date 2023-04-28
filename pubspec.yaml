@@ -47,7 +47,14 @@ dependencies:
   data_table_2: ^2.4.1
   geolocator: ^9.0.2
   geocoding: ^2.1.0
+  geocode: ^1.0.2
+  internet_connection_checker: ^1.0.0+1
+  connectivity_plus: ^3.0.3
+  google_maps_flutter: ^2.2.5
+  google_maps_services_dart: ^1.17.1
   dio: ^4.0.0
+  http: ^0.13.5
+  google_directions_api: ^0.9.1
   #firebase_core: ^2.8.0
   #firebase_core_desktop: ^1.0.2
 
