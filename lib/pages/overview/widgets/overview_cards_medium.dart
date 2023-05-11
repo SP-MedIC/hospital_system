@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hospital_system/constants/style.dart';
-import 'package:hospital_system/pages/overview/widgets/info_cards.dart';
+
 
 class OverviewCardsMediumScreen extends StatefulWidget {
 
@@ -13,6 +13,7 @@ class OverviewCardsMediumScreen extends StatefulWidget {
 class _OverViewCardsLargeScreenState extends State<OverviewCardsMediumScreen> {
 
   late final Stream<DocumentSnapshot> _userStream;
+  int totalNumParamedics =0;
 
   @override
   void initState() {
@@ -22,15 +23,31 @@ class _OverViewCardsLargeScreenState extends State<OverviewCardsMediumScreen> {
         .collection('hospitals')
         .doc(currentUser.uid)
         .snapshots();
+    Stream<int> totalParamedicsStream = ambulance();
+    totalParamedicsStream.listen((int totalDocuments) {
+      setState(() {
+        totalNumParamedics = totalDocuments;
+      });
+    });
   }
 
-  //final User? user = FirebaseAuth.instance.currentUser;
-  //final String userId = FirebaseAuth.instance.currentUser!.uid;
-  //final Stream<DocumentSnapshot> userStream = FirebaseFirestore.instance
-  //    .collection('hospitals')
-  //     .doc(FirebaseAuth.instance.currentUser!.uid)
-  //    .snapshots();
+  Stream<int> ambulance() {
+    CollectionReference paramedics = FirebaseFirestore.instance.collection('users');
 
+    Query availableParamedics = paramedics
+        .where('Role', isEqualTo: 'Paramedic')
+        .where('availability', isEqualTo: 'Online')
+        .where('status', isEqualTo: 'Unassigned');
+    // Listen for changes in the QuerySnapshot
+    Stream<QuerySnapshot> querySnapshotStream = availableParamedics.snapshots();
+
+    // Map the QuerySnapshot stream to an integer stream of the total number of documents
+    Stream<int> totalNumParamedics = querySnapshotStream.map((QuerySnapshot querySnapshot) => querySnapshot.size);
+
+    print(totalNumParamedics);
+    // Return the stream of the updated total number of documents
+    return totalNumParamedics;
+  }
   @override
   Widget build(BuildContext context) {
     double _width = MediaQuery.of(context).size.width;
@@ -50,7 +67,7 @@ class _OverViewCardsLargeScreenState extends State<OverviewCardsMediumScreen> {
         }
 
         final userData = snapshot.data!.data() as Map<String, dynamic>;
-        final services = userData['services'] as Map<String, dynamic>;
+        final services = userData['use_services'] as Map<String, dynamic>;
         //final servicesList = services.values.toList();
 
         return Column(
@@ -62,23 +79,19 @@ class _OverViewCardsLargeScreenState extends State<OverviewCardsMediumScreen> {
                 padding: const EdgeInsets.only(left: 100),
                 child: Row(
                   children: [
-                    buildCard("Ambulance", services['ambulance'].toString(), Colors.orange ),
+                    buildCard("Ambulance", totalNumParamedics.toString(), Colors.redAccent ),
                     SizedBox(
                       width: _width/64,
                     ),
-                    buildCard("Emergency Room", services['emergency_room'].toString(), Colors.redAccent ),
+                    buildCard("Emergency Room", services['Emergency Room']['availability'].toString(), Colors.orangeAccent ),
                     SizedBox(
                       width: _width/64,
                     ),
-                    buildCard("General Ward", services['general_ward'].toString(), Colors.lightBlueAccent ),
+                    buildCard("Labor Room", services['Labor Room']['availability'].toString(), Colors.lightBlueAccent ),
                     SizedBox(
                       width: _width/64,
                     ),
-                    buildCard("Private Rooms", services['private_ward'].toString(), Colors.greenAccent ),
-                    SizedBox(
-                      width: _width/64,
-                    ),
-                    buildCard("Maternal Ward", services['maternal_ward'].toString(), Colors.yellow ),
+                    buildCard("Operating Room", services['Operating Room']['availability'].toString(), Colors.yellow ),
                     SizedBox(
                       width: _width/64,
                     ),
@@ -112,7 +125,7 @@ class _OverViewCardsLargeScreenState extends State<OverviewCardsMediumScreen> {
                 height: 8,
               ),
               Text(
-                  service,
+                  service == '0' ? "-" : service,
                   style: TextStyle(
                       fontSize: 40,
                       color: darke

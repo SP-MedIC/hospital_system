@@ -49,12 +49,13 @@ class AutoGetAmbulance{
 
 
   Future<Map<String, dynamic>> main() async {
-    var data = await FirebaseFirestore.instance.collection('Paramedic_Users').where('availability', isEqualTo: 'Online')
+    var data = await FirebaseFirestore.instance.collection('users').where('Role', isEqualTo: 'Paramedic')
+        .where('availability', isEqualTo: 'Online')
         .where('status', isEqualTo: 'Unassigned').get();
     for (var document in data.docs) {
       Map<String, dynamic> data = document.data();
 
-      //print(data['Full Name']);
+      print(data['Full Name']);
 
       var timeTravel = await computeDistance(
         startLatitude: data['Location']['Latitude'],
@@ -68,7 +69,7 @@ class AutoGetAmbulance{
       //print(timeTravel.runtimeType);
 
 
-      hospitalMap.addAll({data['Full Name']: timeTravel});
+      hospitalMap.addAll({document.id: timeTravel});
     }
     print(hospitalMap);
     var nearest = hospitalMap.values.cast<num>().reduce(min);

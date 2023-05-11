@@ -12,7 +12,6 @@ class OverviewCardsSmallScreen extends StatefulWidget {
 class _OverViewCardsLargeScreenState extends State<OverviewCardsSmallScreen> {
 
   late final Stream<DocumentSnapshot> _userStream;
-  int totalNumParamedics =0;
 
   @override
   void initState() {
@@ -22,30 +21,6 @@ class _OverViewCardsLargeScreenState extends State<OverviewCardsSmallScreen> {
         .collection('hospitals')
         .doc(currentUser.uid)
         .snapshots();
-    Stream<int> totalParamedicsStream = ambulance();
-    totalParamedicsStream.listen((int totalDocuments) {
-      setState(() {
-        totalNumParamedics = totalDocuments;
-      });
-    });
-  }
-
-  Stream<int> ambulance() {
-    CollectionReference paramedics = FirebaseFirestore.instance.collection('users');
-
-    Query availableParamedics = paramedics
-        .where('Role', isEqualTo: 'Paramedic')
-        .where('availability', isEqualTo: 'Online')
-        .where('status', isEqualTo: 'Unassigned');
-    // Listen for changes in the QuerySnapshot
-    Stream<QuerySnapshot> querySnapshotStream = availableParamedics.snapshots();
-
-    // Map the QuerySnapshot stream to an integer stream of the total number of documents
-    Stream<int> totalNumParamedics = querySnapshotStream.map((QuerySnapshot querySnapshot) => querySnapshot.size);
-
-    print(totalNumParamedics);
-    // Return the stream of the updated total number of documents
-    return totalNumParamedics;
   }
 
   @override
@@ -77,22 +52,19 @@ class _OverViewCardsLargeScreenState extends State<OverviewCardsSmallScreen> {
               scrollDirection: Axis.vertical,
               child: Column(
                 children: [
-                  buildCard("Ambulance", totalNumParamedics.toString(), Colors.redAccent ),
+                  buildCard("Ward", services['General Ward']['availability'].toString(), Colors.lightBlueAccent.shade100 ),
                   SizedBox(
                     width: _width/64,
                   ),
-                  buildCard("Emergency Room", services['Emergency Room']['availability'].toString(), Colors.orangeAccent ),
+                  buildCard("Private Room", services['Private Room']['availability'].toString(), Colors.lightBlueAccent.shade100 ),
                   SizedBox(
                     width: _width/64,
                   ),
-                  buildCard("Labor Room", services['Labor Room']['availability'].toString(), Colors.lightBlueAccent ),
+                  buildCard("Operating Room", services['Operating Room']['availability'].toString(), Colors.lightBlueAccent.shade100),
                   SizedBox(
                     width: _width/64,
                   ),
-                  buildCard("Operating Room", services['Operating Room']['availability'].toString(), Colors.yellow ),
-                  SizedBox(
-                    width: _width/64,
-                  ),
+                  buildCard("Delivery Room", services['Labor Room']['availability'].toString(), Colors.lightBlueAccent.shade100 ),
                 ],
               ),
             ),
@@ -119,12 +91,12 @@ class _OverViewCardsLargeScreenState extends State<OverviewCardsSmallScreen> {
                   )
               ),
               SizedBox(
-                height: 8,
+                height: 5,
               ),
               Text(
                   service == '0' ? "-" : service,
                   style: TextStyle(
-                      fontSize: 40,
+                      fontSize: 30,
                       color: darke
                   )
               ),

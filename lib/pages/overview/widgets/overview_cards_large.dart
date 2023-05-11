@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hospital_system/constants/style.dart';
-import 'package:hospital_system/pages/overview/widgets/info_cards.dart';
 
 class OverViewCardsLargeScreen extends StatefulWidget {
 
@@ -13,6 +12,7 @@ class OverViewCardsLargeScreen extends StatefulWidget {
 class _OverViewCardsLargeScreenState extends State<OverViewCardsLargeScreen> {
 
   late final Stream<DocumentSnapshot> _userStream;
+  int totalNumParamedics =0;
 
   @override
   void initState() {
@@ -22,14 +22,32 @@ class _OverViewCardsLargeScreenState extends State<OverViewCardsLargeScreen> {
         .collection('hospitals')
         .doc(currentUser.uid)
         .snapshots();
+
+    Stream<int> totalParamedicsStream = ambulance();
+    totalParamedicsStream.listen((int totalDocuments) {
+      setState(() {
+        totalNumParamedics = totalDocuments;
+      });
+    });
   }
 
-  //final User? user = FirebaseAuth.instance.currentUser;
-  //final String userId = FirebaseAuth.instance.currentUser!.uid;
-  //final Stream<DocumentSnapshot> userStream = FirebaseFirestore.instance
-  //    .collection('hospitals')
- //     .doc(FirebaseAuth.instance.currentUser!.uid)
-  //    .snapshots();
+  Stream<int> ambulance() {
+    CollectionReference paramedics = FirebaseFirestore.instance.collection('users');
+
+    Query availableParamedics = paramedics
+        .where('Role', isEqualTo: 'Paramedic')
+        .where('availability', isEqualTo: 'Online')
+        .where('status', isEqualTo: 'Unassigned');
+    // Listen for changes in the QuerySnapshot
+    Stream<QuerySnapshot> querySnapshotStream = availableParamedics.snapshots();
+
+    // Map the QuerySnapshot stream to an integer stream of the total number of documents
+    Stream<int> totalNumParamedics = querySnapshotStream.map((QuerySnapshot querySnapshot) => querySnapshot.size);
+
+    print(totalNumParamedics);
+    // Return the stream of the updated total number of documents
+    return totalNumParamedics;
+}
 
   @override
   Widget build(BuildContext context) {
@@ -62,15 +80,15 @@ class _OverViewCardsLargeScreenState extends State<OverViewCardsLargeScreen> {
                   padding: const EdgeInsets.only(left: 100),
                   child: Row(
                     children: [
-                      buildCard("Emergency Room", services['Emergency Room']['availability'].toString(), Colors.redAccent ),
+                      buildCard("Ambulance", totalNumParamedics.toString(), Colors.redAccent ),
                       SizedBox(
                         width: _width/64,
                       ),
-                      buildCard("General Ward", services['General Ward']['availability'].toString(), Colors.lightBlueAccent ),
+                      buildCard("Emergency Room", services['Emergency Room']['availability'].toString(), Colors.orangeAccent ),
                       SizedBox(
                         width: _width/64,
                       ),
-                      buildCard("Private Rooms", services['Private Room']['availability'].toString(), Colors.greenAccent ),
+                      buildCard("Labor Room", services['Labor Room']['availability'].toString(), Colors.lightBlueAccent ),
                       SizedBox(
                         width: _width/64,
                       ),
@@ -90,34 +108,34 @@ class _OverViewCardsLargeScreenState extends State<OverViewCardsLargeScreen> {
 
   Card buildCard(name, service,color) {
     return Card(
-                  color: color,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Center(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            name,
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  color: light,
-                              )
-                          ),
-                          SizedBox(
-                            height: 8,
-                          ),
-                          Text(
-                            service,
-                              style: TextStyle(
-                                  fontSize: 40,
-                                  color: darke
-                              )
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
+      color: color,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                  name,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: light,
+                  )
+              ),
+              SizedBox(
+                height: 8,
+              ),
+              Text(
+                  service == '0' ? "-" : service,
+                  style: TextStyle(
+                      fontSize: 40,
+                      color: darke
+                  )
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

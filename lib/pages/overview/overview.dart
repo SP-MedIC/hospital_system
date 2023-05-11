@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:hospital_system/constants/controllers.dart';
 import 'package:hospital_system/helpers/responsiveness.dart';
 import 'package:hospital_system/pages/overview/widgets/requesting_patients.dart';
-import 'package:hospital_system/pages/overview/widgets/live_date_time.dart';
+import 'package:hospital_system/widgets/live_date_time.dart';
 import 'package:hospital_system/pages/overview/widgets/overview_cards_large.dart';
 import 'package:hospital_system/pages/overview/widgets/overview_cards_medium.dart';
 import 'package:hospital_system/pages/overview/widgets/overview_cards_small.dart';
@@ -38,14 +38,18 @@ class _OverviewPageState extends State<OverviewPage> {
                   weight: FontWeight.bold,
                   color: Colors.black,
                 ),
-              )
+              ),
+              Expanded(child: Container(),),
+              Container(
+                child: LiveDateTimeScreen(),
+              ),
             ],
           ),
         );
         }),
-        Container(
-          child: LiveDateTimeScreen(),
-        ),
+        //Container(
+          //child: LiveDateTimeScreen(),
+        //),
         Expanded(
             child: ListView(
               children: [
@@ -57,32 +61,50 @@ class _OverviewPageState extends State<OverviewPage> {
                     OverViewCardsLargeScreen()
                 else
                   OverviewCardsSmallScreen(),
+                SizedBox(
+                  height: 10,
+                ),
+                Column(
+                  children: [
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 10,
+                        ),
+                        CustomText(
+                          text: "Requesting Patients",
+                          color: lightGrey,
+                          weight: FontWeight.bold,
+                        ),
+                      ],
+                    ),
+                    RequestingPatients(),
+                  ],
+                )
               ],
             )
         ),
-        Expanded(
-            child: Container(
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 10,
-                      ),
-                      CustomText(
-                        text: "Requesting Patients",
-                        color: lightGrey,
-                        weight: FontWeight.bold,
-                      ),
-                    ],
-                  ),
-                  Container(
-                    child: RequestingPatients(),
-                  ),
-                ],
-              ),
-            )
-        )
+        // Expanded(
+        //     child: Column(
+        //       children: [
+        //         Row(
+        //           children: [
+        //             SizedBox(
+        //               width: 10,
+        //             ),
+        //             CustomText(
+        //               text: "Requesting Patients",
+        //               color: lightGrey,
+        //               weight: FontWeight.bold,
+        //             ),
+        //           ],
+        //         ),
+        //         Container(
+        //           child: RequestingPatients(),
+        //         ),
+        //       ],
+        //     )
+        // )
       ],
     );
   }

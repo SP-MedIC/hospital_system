@@ -61,7 +61,7 @@ class _LiveDateTimeScreenState extends State<LiveDateTimeScreen> {
                   Text(
                     timeText,
                     style: const TextStyle(
-                      fontSize: 40,
+                      fontSize: 20,
                       color:Colors.black,
                       letterSpacing: 3,
                       fontWeight: FontWeight.bold,
@@ -71,7 +71,7 @@ class _LiveDateTimeScreenState extends State<LiveDateTimeScreen> {
                   Text(
                     dateText,
                     style: const TextStyle(
-                      fontSize: 20,
+                      fontSize: 10,
                       color:Colors.black,
                       letterSpacing: 3,
                       fontWeight: FontWeight.bold,

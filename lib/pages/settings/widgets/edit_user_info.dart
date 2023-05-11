@@ -1,18 +1,21 @@
 import 'dart:core';
+import 'dart:html';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:geocode/geocode.dart';
 import 'package:get/get.dart';
 import 'package:hospital_system/layout.dart';
 import 'package:hospital_system/pages/authentication/login_page.dart';
-import 'package:hospital_system/pages/general_screen.dart';
 import 'package:hospital_system/routing/routes.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart';
+
+import '../../../controllers/authentication_controller.dart';
 
 class EditSettings extends StatefulWidget {
   const EditSettings({Key? key}) : super(key: key);
@@ -35,13 +38,14 @@ class _EditSettingsState extends State<EditSettings> {
   final addressController = TextEditingController();
   final emergencyController = TextEditingController();
   final privateController = TextEditingController();
-  final ambulanceController = TextEditingController();
-  final maternalController = TextEditingController();
+  final operatingController = TextEditingController();
   final generalController = TextEditingController();
-  final emailController = TextEditingController();
+  final laborRoomController = TextEditingController();
+
 
   //String imageUrl = '';
-  String _profilePictureUrl = "";
+  //String _profilePictureUrl = "";
+  String imgUrl = "";
 
   @override
   void initState() {
@@ -49,7 +53,7 @@ class _EditSettingsState extends State<EditSettings> {
     // Retrieve current user's information from Firestore and set the initial values
     // for the form fields
     getUserProfileInfo();
-    _pickImage();
+    //_pickImage();
   }
 
   void getUserProfileInfo() async {
@@ -61,35 +65,30 @@ class _EditSettingsState extends State<EditSettings> {
       passwordController.text = userData['password'];
       numberController.text = userData['Contact_num'];
       addressController.text = userData['Address'];
-      emailController.text = email;
-      //_profilePictureUrl = userData['Pic_url'];
+      //emailController.text = email;
+      imgUrl = userData['Pic_url'].toString();
     });
   }
 
-  Future<void> _pickImage() async {
-    //final currentUser = FirebaseAuth.instance.currentUser;
-    PickedFile? pickedImage = await ImagePicker().getImage(source: ImageSource.gallery);
-    if (pickedImage != null) {
-      // Upload the selected image to Firebase Storage
-      File imageFile = File(pickedImage.path);
-      String fileName = basename(imageFile.path);
-      Reference storageRef = FirebaseStorage.instance.ref().child('profile_pictures').child(fileName);
-      UploadTask uploadTask = storageRef.putFile(imageFile);
-      TaskSnapshot snapshot = await uploadTask.whenComplete(() {});
-      String downloadUrl = await snapshot.ref.getDownloadURL();
-
-      // Update the Firestore document for the current user with the new image URL
-      await FirebaseFirestore.instance.collection('hospitals').doc(currentUser!.uid).update({
-        'Pic_url': downloadUrl,
+  uploadToStorage() {
+    final user = FirebaseAuth.instance.currentUser!.uid;
+    FileUploadInputElement input = FileUploadInputElement();
+    input.accept = '.png,.jpg';
+    FirebaseStorage fs = FirebaseStorage.instance;
+    input.click();
+    input.onChange.listen((event) {
+      final file = input.files!.first;
+      final reader = FileReader();
+      reader.readAsDataUrl(file);
+      reader.onLoadEnd.listen((event) async {
+        var snapshot = await fs.ref().child('profile_pictures/$user/${DateTime.now().millisecondsSinceEpoch}').putBlob(file);
+        String downloadUrl = await snapshot.ref.getDownloadURL();
+        setState(() {
+          imgUrl = downloadUrl;
+        });
       });
-
-      // Update the profile picture URL in the widget's state to trigger a re-build and display the new image
-      setState(() {
-        _profilePictureUrl = downloadUrl;
-      });
-    }
+    });
   }
-
 
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -107,27 +106,71 @@ class _EditSettingsState extends State<EditSettings> {
 
 
   Future submit() async {
+    final LoginController loginController = Get.find();
     //if(passwordConfirmed()){
     //String uid = FirebaseAuth.instance.currentUser!.uid;
     String email = FirebaseAuth.instance.currentUser!.email!;
     print(email);
+    //GeoCode geoCode = GeoCode();
+    //address = addressController.text;
+    //print(address);
+    //print(address.runtimeType);
+
+    // try {
+    //   Coordinates coordinates = await geoCode.forwardGeocoding(
+    //       address: address);
+    //   print("Latitude: ${coordinates.latitude}");
+    //   print("Longitude: ${coordinates.longitude}");
+    //   latitude = coordinates.latitude.toString();
+    //   longitude = coordinates.longitude.toString();
+    //   print(latitude.runtimeType);
+    //   print(longitude.runtimeType);
+    //
+    // } catch (e) {
+    //   print(e);
+    // }
+    //List<Location> locations = await locationFromAddress(addressController.text);
+    //Location location = locations.first;
+    //print("latitude: ${location.latitude}, longitude: ${location.longitude}");
     FirebaseFirestore.instance.collection('hospitals').doc(currentUser!.uid).update({
       'Name':nameController.text,
-      //'email': email,
       'Address': addressController.text,
       'Contact_num': numberController.text,
       'password':passwordController.text,
       'type':selectedType,
-      'Pic_url': _profilePictureUrl,
+      'Pic_url':imgUrl,
+      'use_services':{
+        'Emergency Room':{
+          'availability':emergencyController.text,
+          'total':emergencyController.text,
+        },
+        'General Ward':{
+          'availability':generalController.text,
+          'total':generalController.text,
+        },
+        'Operating Room':{
+          'availability':operatingController.text,
+          'total':operatingController.text,
+        },
+        'Private Room':{
+          'availability':privateController.text,
+          'total':privateController.text,
+        },
+        'Labor Room':{
+          'availability':laborRoomController.text,
+          'total':laborRoomController.text,
+        },
+      }
 
     });
     //Get.offAndToNamed(authenticationPageRoute);
     //}
 
     //if (currentUser != null) {
-    // signed in
-    //  if (!mounted) return;
-    //  Get.offAndToNamed(authenticationPageRoute);
+      //signed in
+      //if (!mounted) return;
+      //loginController.doLogout();
+    //}
     //} else {
     //  if (!mounted) return;
     //  Navigator.pop(context as BuildContext);
@@ -175,11 +218,17 @@ class _EditSettingsState extends State<EditSettings> {
                     Center(
                       child: GestureDetector(
                         onTap: () {
-                          _pickImage(); // Call the _pickImage() function when the profile picture is tapped
+                          uploadToStorage(); // Call the _pickImage() function when the profile picture is tapped
                         },
                         child: CircleAvatar(
-                          radius: 50.0,
-                          backgroundImage: _profilePictureUrl != null ? NetworkImage(_profilePictureUrl) : null,
+                          radius: 65,
+                          backgroundColor: Colors.transparent,
+                          backgroundImage: imgUrl.toString() == ""
+                              ? null
+                              : NetworkImage(imgUrl),
+                          child: imgUrl.toString() == ""
+                              ? Icon(Icons.add_a_photo, color: Colors.grey[500], size: 35,)
+                              : null,
                         ),
                       ),
                     ),

@@ -12,7 +12,6 @@ import 'package:get/get.dart';
 import 'package:hospital_system/controllers/authentication_controller.dart';
 import 'package:hospital_system/layout.dart';
 import 'package:hospital_system/pages/authentication/login_page.dart';
-import 'package:hospital_system/pages/general_screen.dart';
 import 'package:hospital_system/routing/routes.dart';
 import 'package:hospital_system/widgets/top_nav.dart';
 import 'package:image_picker/image_picker.dart';
@@ -164,24 +163,24 @@ class _AddUserInformationState extends State<AddUserInformation> {
       },
       'use_services':{
         'Emergency Room':{
-          'availability':emergencyController.text,
-          'total':emergencyController.text,
+          'availability':emergencyController.text as int,
+          'total':emergencyController.text as int,
         },
         'General Ward':{
-          'availability':generalController.text,
-          'total':generalController.text,
+          'availability':generalController.text as int,
+          'total':generalController.text as int,
         },
         'Operating Room':{
-          'availability':operatingController.text,
-          'total':operatingController.text,
+          'availability':operatingController.text as int,
+          'total':operatingController.text as int,
         },
         'Private Room':{
-          'availability':privateController.text,
-          'total':privateController.text,
+          'availability':privateController.text as int,
+          'total':privateController.text as int,
         },
         'Labor Room':{
-          'availability':laborRoomController.text,
-          'total':laborRoomController.text,
+          'availability':laborRoomController.text as int,
+          'total':laborRoomController.text as int,
         },
       }
 

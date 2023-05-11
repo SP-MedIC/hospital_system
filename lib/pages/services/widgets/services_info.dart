@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hospital_system/constants/style.dart';
-import 'package:hospital_system/pages/overview/widgets/info_cards.dart';
 
 class ServicesInformation extends StatefulWidget {
 
@@ -48,7 +47,7 @@ class _ServicesInformationState extends State<ServicesInformation> {
               decoration: InputDecoration(labelText: 'Total'),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter a value';
+                  return 'Please enter a value. Enter 0 if none';
                 }
                 return null;
               },
@@ -80,6 +79,8 @@ class _ServicesInformationState extends State<ServicesInformation> {
     final DocumentReference docRef = FirebaseFirestore.instance
         .collection('hospitals')
         .doc(currentUser.uid);
+
+    //final String currentTotal = docRef.get().data()![serviceName];
 
     try {
       await docRef.update({

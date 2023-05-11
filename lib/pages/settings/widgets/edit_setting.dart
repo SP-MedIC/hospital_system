@@ -9,7 +9,6 @@ import 'package:get/get.dart';
 import 'package:hospital_system/controllers/authentication_controller.dart';
 import 'package:hospital_system/layout.dart';
 import 'package:hospital_system/pages/authentication/login_page.dart';
-import 'package:hospital_system/pages/general_screen.dart';
 import 'package:hospital_system/routing/routes.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';

@@ -9,8 +9,6 @@ import 'package:hospital_system/controllers/navigation_controller.dart';
 import 'package:hospital_system/layout.dart';
 import 'package:hospital_system/pages/authentication/authentication.dart';
 import 'package:hospital_system/pages/authentication/login_page.dart';
-import 'package:hospital_system/pages/general_screen.dart';
-import 'package:hospital_system/pages/main_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:hospital_system/pages/overview/widgets/requesting_patients.dart';
 import 'package:hospital_system/pages/patients/widgets/patient_info.dart';

@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:hospital_system/constants/controllers.dart';
 import 'package:hospital_system/helpers/responsiveness.dart';
-import 'package:hospital_system/pages/settings/widgets/edit_setting.dart';
+import 'package:hospital_system/pages/settings/widgets/edit_user_info.dart';
 import 'package:hospital_system/widgets/custom_text.dart';
 
 class Setting extends StatefulWidget {

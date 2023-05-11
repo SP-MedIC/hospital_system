@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:hospital_system/pages/general_screen.dart';
 import 'package:hospital_system/pages/authentication/login_page.dart';
 
 class SignupPage extends StatefulWidget {
@@ -61,7 +60,7 @@ class _SignupPageState extends State<SignupPage> {
     if (currentUser != null) {
       // signed in
       if (!mounted) return;
-      Navigator.push(context, MaterialPageRoute(builder: (context) => const GeneralScreen()));
+      //Navigator.push(context, MaterialPageRoute(builder: (context) => const GeneralScreen()));
     } else {
       if (!mounted) return;
       Navigator.pop(context);

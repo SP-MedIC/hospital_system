@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hospital_system/controllers/authentication_controller.dart';
 import 'package:hospital_system/pages/authentication/signup_page.dart';
-import 'package:hospital_system/pages/general_screen.dart';
+
 
 
 class LoginPage extends StatefulWidget {

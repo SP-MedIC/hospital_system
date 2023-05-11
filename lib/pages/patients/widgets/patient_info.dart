@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hospital_system/constants/style.dart';
-import 'package:hospital_system/pages/overview/widgets/request_patient_info.dart';
 import 'package:hospital_system/widgets/custom_text.dart';
 
 class PatientInformation extends StatefulWidget {
@@ -17,20 +16,20 @@ class _PatientInformationState extends State<PatientInformation> {
   //List<String> services = ['ambulance', 'emergency_room', 'general_ward']; // Replace with your actual list of services
   String selectedType = '';
   String prev = '';
-  List<String> services = [];
+  List<String> services = ['Ambulance','Discharged'];
 
   late final Stream<QuerySnapshot> _patientStream;
 
   @override
   void initState() {
     super.initState();
-    getListService();
-    updateServiceInUse;
-    _patientStream = FirebaseFirestore.instance
-        .collection('hospitals')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .collection('patient')
-        .snapshots();
+    //updateServiceInUse;
+    // _patientStream = FirebaseFirestore.instance
+    //     .collection('hospitals')
+    //     .doc(FirebaseAuth.instance.currentUser!.uid)
+    //     .collection('patient')
+    //     .snapshots();
+    //getListService();
   }
 
   void getListService() async{
@@ -40,11 +39,16 @@ class _PatientInformationState extends State<PatientInformation> {
         .get();
     var service = listServices['use_services'] as Map<String, dynamic>;
     var serviceNames = service.keys.toList();
+    for (var name in serviceNames) {
+      if (service[name] != 0) { // Check if the value is not 0
+        services.add(name); // Add the field name to the list
+      }
+    }
     // Add the list field value to myList
-    services.addAll(List<String>.from(serviceNames));
+    //services.addAll(List<String>.from(serviceNames));
   }
 
-  void updateServiceInUse(String docId, String? newValue) async {
+  Future<void> updateServiceInUse(String docId, String? newValue) async {
     // fetch the current patient document
     //DocumentSnapshot patientDoc = await FirebaseFirestore.instance
       //  .collection('hospitals')
@@ -55,6 +59,15 @@ class _PatientInformationState extends State<PatientInformation> {
 
     // get the current value of service_in_use field
     //String? previousValue = patientDoc['service_in_use'];
+    // assume we have a Firestore collection called 'users'
+    CollectionReference usersRef = FirebaseFirestore.instance.collection('users');
+
+// assume we have a document with ID 'user1' in the 'users' collection
+    DocumentReference userRef = usersRef.doc(FirebaseAuth.instance.currentUser!.uid);
+
+// get the document data
+    DocumentSnapshot userSnapshot = await userRef.get();
+    Map<String, dynamic> userData = userSnapshot.data() as Map<String, dynamic>;
 
     // update the service_in_use field in Firestore
     FirebaseFirestore.instance
@@ -77,12 +90,6 @@ class _PatientInformationState extends State<PatientInformation> {
           'use_services.$newValue.availability': FieldValue.increment(-1),
 
             });
-
-        // increment the field with the same name as newValue
-        //FirebaseFirestore.instance
-        //    .collection('hospitals')
-        //    .doc(FirebaseAuth.instance.currentUser!.uid)
-        //    .update({'use_services.$newValue.availability': FieldValue.increment(-1)});
       }
     }).catchError((error) => print('Failed to update service in use: $error'));
   }
@@ -91,8 +98,12 @@ class _PatientInformationState extends State<PatientInformation> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: _patientStream,
+    return StreamBuilder<QuerySnapshot> (
+      stream:FirebaseFirestore.instance
+          .collection('hospitals')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .collection('patient')
+          .snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
@@ -102,6 +113,7 @@ class _PatientInformationState extends State<PatientInformation> {
           return CircularProgressIndicator();
         }
 
+        getListService();
         snapshot.data!.docs.forEach((DocumentSnapshot doc) {
           final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
@@ -110,13 +122,14 @@ class _PatientInformationState extends State<PatientInformation> {
             onPressed: () {
 
             },
-            child: Text('View', style: TextStyle(decoration: TextDecoration.underline,),),
+            child: Text('View', style: TextStyle(decoration: TextDecoration.underline,)),
           );
 
           selectedType = data['Service in use'];
+          //services = await HospitalService().getListService();
           print(services);
           // create a DropdownButton widget with current value and onChanged callback
-          final dropdownButton = buildDropdownButton2(selectedType, services, doc);
+          final dropdownButton = buildDropdownButton2(context, selectedType, services, doc);
 
           // create a DataRow from the data and add it to the list
           final row = DataRow(cells: [
@@ -168,7 +181,7 @@ class _PatientInformationState extends State<PatientInformation> {
     );
   }
 
-  DropdownButton<String> buildDropdownButton2(selectedType, List<String> services, DocumentSnapshot<Object?> doc) {
+  DropdownButton<String> buildDropdownButton2 (BuildContext context, selectedType, List<String> services, DocumentSnapshot<Object?> doc) {
     return DropdownButton<String>(
       value: selectedType,
       items: services.map((String service) {

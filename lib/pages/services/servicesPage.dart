@@ -6,6 +6,7 @@ import 'package:hospital_system/pages/services/widgets/services_info.dart';
 import 'package:hospital_system/widgets/custom_text.dart';
 
 import '../../constants/style.dart';
+import '../../widgets/live_date_time.dart';
 
 class ServicesPage extends StatelessWidget {
   const ServicesPage({Key? key}) : super(key: key);
@@ -28,7 +29,11 @@ class ServicesPage extends StatelessWidget {
                   weight: FontWeight.bold,
                   color: Colors.black,
                 ),
-              )
+              ),
+              Expanded(child: Container(),),
+              Container(
+                child: LiveDateTimeScreen(),
+              ),
             ],
           ),
         )),
