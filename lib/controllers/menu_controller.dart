@@ -31,6 +31,8 @@ class CustomMenuController extends GetxController{
         return _customIcon(Icons.local_hospital_outlined, itemName);
       case settingsPageDisplayName:
         return _customIcon(Icons.settings, itemName);
+      case historyPageDisplayName:
+        return _customIcon(Icons.history_outlined, itemName);
       default:
         return _customIcon(Icons.exit_to_app_rounded, itemName);
     }

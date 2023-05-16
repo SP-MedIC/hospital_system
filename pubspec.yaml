@@ -55,6 +55,10 @@ dependencies:
   dio: ^4.0.0
   http: ^0.13.5
   google_directions_api: ^0.9.1
+  shared_preferences: ^2.1.1
+  fluttertoast: ^8.2.1
+  email_validator: ^2.1.16
+  sticky_headers: ^0.3.0+2
   #firebase_core: ^2.8.0
   #firebase_core_desktop: ^1.0.2
 

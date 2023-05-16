@@ -6,6 +6,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:geocode/geocode.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
@@ -50,6 +51,8 @@ class _AddUserInformationState extends State<AddUserInformation> {
   String address = "";
   String latitude = "";
   String longitude = "";
+  bool showPasswordError = false;
+  bool showServiceError = false;
 
   @override
   void initState() {
@@ -81,33 +84,6 @@ class _AddUserInformationState extends State<AddUserInformation> {
     });
   }
 
-  //Future<void> _pickImage() async {
-    //final user = FirebaseAuth.instance.currentUser!.uid;
-    // Open the image picker
-    //final pickedFile = await ImagePicker().getImage(source: ImageSource.gallery);
-
-    //if (pickedFile != null) {
-      //final file = File(pickedFile.path);
-
-      // Create the file metadata
-      //final metadata = SettableMetadata(contentType: "image/jpeg");
-      // Upload the image to Firebase storage
-      //final storageRef = FirebaseStorage.instance.ref().child('profile_pictures/$user/${DateTime.now().millisecondsSinceEpoch}.jpg');
-      //final snapshot = await storageRef.putFile(file,metadata).whenComplete(() {
-        //return null;
-      //});
-
-      // Get the URL of the uploaded file
-      //final imageUrl = await snapshot.ref.getDownloadURL();
-
-      // Update the _profilePictureUrl state variable with the new URL
-      //setState(() {
-        //_profilePictureUrl = imageUrl;
-      //});
-      //print(_profilePictureUrl);
-    //}
-  //}
-
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool haveAgreed = false;
   bool isHiddenPassword = true;
@@ -130,8 +106,9 @@ class _AddUserInformationState extends State<AddUserInformation> {
     print(email);
     GeoCode geoCode = GeoCode();
     address = addressController.text;
-    print(address);
-    print(address.runtimeType);
+    String password = passwordController.text.trim();
+
+    await FirebaseAuth.instance.currentUser!.updatePassword(password);
 
     try {
       Coordinates coordinates = await geoCode.forwardGeocoding(
@@ -150,11 +127,11 @@ class _AddUserInformationState extends State<AddUserInformation> {
     //Location location = locations.first;
     //print("latitude: ${location.latitude}, longitude: ${location.longitude}");
     FirebaseFirestore.instance.collection('hospitals').doc(currentUser!.uid).set({
-      'Name':nameController.text,
+      'Name':nameController.text.trim(),
       'email': email,
       'Address': addressController.text,
       'Contact_num': numberController.text,
-      'password':passwordController.text,
+      'password':password,
       'type':selectedType,
       'Pic_url':imgUrl,
       'Location': {
@@ -376,7 +353,6 @@ class _AddUserInformationState extends State<AddUserInformation> {
                                   onTap: () {
                                     _togglePassword();
                                   },
-                                  //isHiddenPassword = !isHiddenPassword;
                                   child: Icon(
                                       isHiddenPassword? Icons.visibility
                                           : Icons.visibility_off)),
@@ -414,9 +390,11 @@ class _AddUserInformationState extends State<AddUserInformation> {
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return "* Required";
+                              }else if(passwordConfirmed()){
+                                return "Passwords do not match";
                               }
                               return null;
-                            }
+                            },
                         ),
                       ),
                       const Text("Hospital Type:"),
@@ -479,11 +457,13 @@ class _AddUserInformationState extends State<AddUserInformation> {
     );
   }
 
-  Container servicesform(label, controller) {
+  Container servicesform(String label, TextEditingController controller) {
     return Container(
       padding: EdgeInsets.only(left: 25),
       child: TextFormField(
         controller: controller,
+        keyboardType: TextInputType.number, // Set the keyboard type to number
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly], // Allow only digits as input
         decoration: InputDecoration(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.0),
@@ -491,14 +471,18 @@ class _AddUserInformationState extends State<AddUserInformation> {
           ),
           labelText: label,
         ),
-        validator: (value){
-          if(value == null || value.isEmpty){
+        validator: (value) {
+          if (value == null || value.isEmpty) {
             return "* Required";
-          } else if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
-              return "Please enter a valid number";
+          } else {
+            try {
+              int.parse(value); // Attempt to parse the input as an integer
+              return null; // Return null if parsing succeeds
+            } catch (e) {
+              return "Please enter a valid number. Enter 0 if None.";
+            }
           }
-          return null;
-          },
+        },
       ),
     );
   }

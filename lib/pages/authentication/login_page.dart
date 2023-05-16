@@ -1,8 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:hospital_system/constants/style.dart';
 import 'package:hospital_system/controllers/authentication_controller.dart';
+import 'package:hospital_system/pages/authentication/forgot_password.dart';
 import 'package:hospital_system/pages/authentication/signup_page.dart';
 
 
@@ -30,11 +33,40 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-  Future logIn() async {
-    await FirebaseAuth.instance.signInWithEmailAndPassword(
+  Future<bool> logIn() async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text.trim(),
-        password: passwordController.text.trim());
+        password: passwordController.text.trim(),
+      );
+      return true; // Login successful
+    } catch (e) {
+      print("Login error: $e");
+      return false; // Login failed
+    }
   }
+
+  // void resetPassword() async {
+  //   if (_formKey.currentState!.validate()) {
+  //     try {
+  //       await FirebaseAuth.instance.sendPasswordResetEmail(
+  //         email: emailController.text.trim(),
+  //       );
+  //       Fluttertoast.showToast(
+  //         msg: "Password reset email sent",
+  //         toastLength: Toast.LENGTH_SHORT,
+  //         gravity: ToastGravity.BOTTOM,
+  //       );
+  //     } catch (e) {
+  //       Fluttertoast.showToast(
+  //         msg: "Failed to send password reset email",
+  //         toastLength: Toast.LENGTH_SHORT,
+  //         gravity: ToastGravity.BOTTOM,
+  //       );
+  //     }
+  //   }
+  // }
+
 
   @override
   void dispose(){
@@ -46,7 +78,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
 
-    // Bind the LoginController to the HomePage
+    // Bind the LoginController to the LoginPage
     final LoginController loginController = Get.find();
 
     return Scaffold(
@@ -77,6 +109,23 @@ class _LoginPageState extends State<LoginPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
+                        Obx(() {
+                          final errorMessage = loginController.errorMessage.value;
+                          if (errorMessage.isNotEmpty) {
+                            return Text(
+                              errorMessage,
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 16.0,
+                              ),
+                            );
+                          } else {
+                            return SizedBox.shrink(); // Return an empty SizedBox if no error message
+                          }
+                        }),
+                        SizedBox(
+                          height: 10,
+                        ),
                         TextFormField(
                           controller: emailController,
                           decoration: InputDecoration(
@@ -130,7 +179,9 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             RawMaterialButton(
                               constraints: const BoxConstraints(),
-                              onPressed: () {},
+                              onPressed: () {
+                                Get.to(() => ForgotPassword());
+                              },
                               child: const Text('Forgot Password?',
                                 style: TextStyle(
                                   fontSize: 14.0,
@@ -145,16 +196,17 @@ class _LoginPageState extends State<LoginPage> {
                           child: RawMaterialButton(
                             splashColor: Colors.transparent,
                             highlightColor: Colors.transparent,
-                            fillColor: const Color(0xFFba181b),
+                            fillColor: active,
                             elevation: 0.0,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30.0),
-                              side: const BorderSide(color: Color(0xFFba181b)),
+                              side: BorderSide(color: active),
                             ),
                             onPressed: () {
-                              loginController.doLogin(emailController.text.trim(),passwordController.text.trim());
+                             loginController.doLogin(emailController.text.trim(),passwordController.text.trim());
                             },
+
                             child: const Text('LOGIN',
                               style: TextStyle(
                                 color: Colors.white,

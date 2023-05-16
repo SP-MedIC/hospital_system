@@ -36,16 +36,12 @@ class _EditSettingsState extends State<EditSettings> {
   final nameController = TextEditingController();
   final numberController = TextEditingController();
   final addressController = TextEditingController();
-  final emergencyController = TextEditingController();
-  final privateController = TextEditingController();
-  final operatingController = TextEditingController();
-  final generalController = TextEditingController();
-  final laborRoomController = TextEditingController();
 
 
   //String imageUrl = '';
   //String _profilePictureUrl = "";
   String imgUrl = "";
+  String selectedType = '';
 
   @override
   void initState() {
@@ -65,8 +61,9 @@ class _EditSettingsState extends State<EditSettings> {
       passwordController.text = userData['password'];
       numberController.text = userData['Contact_num'];
       addressController.text = userData['Address'];
-      //emailController.text = email;
       imgUrl = userData['Pic_url'].toString();
+      selectedType = userData['type'];
+
     });
   }
 
@@ -96,7 +93,6 @@ class _EditSettingsState extends State<EditSettings> {
   bool isHiddenPassword = true;
 
   List<String> type = ['Private', 'Public'];
-  String selectedType = 'Public';
 
   void _togglePassword() {
     setState(() {
@@ -139,29 +135,6 @@ class _EditSettingsState extends State<EditSettings> {
       'password':passwordController.text,
       'type':selectedType,
       'Pic_url':imgUrl,
-      'use_services':{
-        'Emergency Room':{
-          'availability':emergencyController.text,
-          'total':emergencyController.text,
-        },
-        'General Ward':{
-          'availability':generalController.text,
-          'total':generalController.text,
-        },
-        'Operating Room':{
-          'availability':operatingController.text,
-          'total':operatingController.text,
-        },
-        'Private Room':{
-          'availability':privateController.text,
-          'total':privateController.text,
-        },
-        'Labor Room':{
-          'availability':laborRoomController.text,
-          'total':laborRoomController.text,
-        },
-      }
-
     });
     //Get.offAndToNamed(authenticationPageRoute);
     //}

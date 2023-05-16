@@ -80,29 +80,35 @@ class _ServicesInformationState extends State<ServicesInformation> {
         .collection('hospitals')
         .doc(currentUser.uid);
 
-    //final String currentTotal = docRef.get().data()![serviceName];
-
     try {
-      await docRef.update({
-        'use_services.$serviceName.total': newTotal,
-        'use_services.$serviceName.availability': newTotal,
-      });
+      final DocumentSnapshot userSnapshot = await docRef.get();
+      final Map<String, dynamic>? data = userSnapshot.data() as Map<String, dynamic>?;
+
+      if (data != null && data.containsKey('use_services')) {
+        final Map<String, dynamic>? useServices = data['use_services'] as Map<String, dynamic>?;
+
+        if (useServices != null && useServices.containsKey(serviceName)) {
+          final Map<String, dynamic>? serviceData = useServices[serviceName] as Map<String, dynamic>?;
+
+          if (serviceData != null && serviceData.containsKey('total')) {
+            final int currentTotal = serviceData['total'] as int;
+            final int currentAvailable = serviceData['availability'] as int;
+            final int availability = (newTotal - currentTotal) + currentAvailable;
+
+            await docRef.update({
+              'use_services.$serviceName.total': newTotal,
+              'use_services.$serviceName.availability': availability,
+            });
+          }
+        }
+      }
     } catch (e) {
       print('Error updating total: $e');
     }
   }
 
-
-  //final User? user = FirebaseAuth.instance.currentUser;
-  //final String userId = FirebaseAuth.instance.currentUser!.uid;
-  //final Stream<DocumentSnapshot> userStream = FirebaseFirestore.instance
-  //    .collection('hospitals')
-  //     .doc(FirebaseAuth.instance.currentUser!.uid)
-  //    .snapshots();
-
   @override
   Widget build(BuildContext context) {
-    double _width = MediaQuery.of(context).size.width;
 
     return Center(
       child: Column(
@@ -128,6 +134,7 @@ class _ServicesInformationState extends State<ServicesInformation> {
                   .map((service) => service['availability'])
                   .toList();
               var total = services.values.map((service) => service['total']).toList();
+              //var List<String> occupied = [];
               //final servicesList = services.values.toList();
 
               return Column(
@@ -138,7 +145,7 @@ class _ServicesInformationState extends State<ServicesInformation> {
                     child: DataTable(
                       columns: [
                         DataColumn(label: Text('Service')),
-                        DataColumn(label: Text('Availability')),
+                        DataColumn(label: Text('Available')),
                         DataColumn(label: Text('Total')),
                         DataColumn(label: Text('Update Total')),
                       ],
@@ -153,16 +160,12 @@ class _ServicesInformationState extends State<ServicesInformation> {
                             DataCell(Text(availability[index].toString())),
                             DataCell(Text(total[index].toString())),
                             DataCell(
-                              ElevatedButton(
+                              TextButton(
                                 onPressed: (){
                                   editDialog(serviceName, currentTotal);
                                 },
-                                style: ElevatedButton.styleFrom(
-                                  primary: Colors.deepOrange.shade600, // set the button's background color
-                                  onPrimary: Colors.white, // set the text color
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.0), // set button's border radius
-                                  ),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.deepOrange.shade600, // set the text color
                                 ),
                                 child: Padding(
                                   padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
