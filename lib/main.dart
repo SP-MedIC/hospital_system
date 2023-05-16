@@ -16,6 +16,10 @@ import 'package:hospital_system/pages/settings/settings.dart';
 import 'package:hospital_system/routing/routes.dart';
 //import 'controllers/auth_controller.dart';
 import 'firebase_options.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'pages/error_404.dart';
+
 
 
 
@@ -29,14 +33,35 @@ void main() async{
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+
+}
+
+class _MyAppState extends State<MyApp> {
+  bool isLoggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    checkLoginStatus();
+  }
+
+  void checkLoginStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    });
+  }
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      initialRoute: authenticationPageRoute,
+      initialRoute: isLoggedIn ? rootRoute : authenticationPageRoute,
       getPages: [
         GetPage(name: authenticationPageRoute, page: () => GetBuilder<LoginController>(
         builder: (loginController) {
@@ -56,8 +81,9 @@ class MyApp extends StatelessWidget {
         },
           //binding: HomeBinding(),
         ),
-
+        GetPage(name: errorPageRoute, page: () => ErrorPage()),
       ],
+      unknownRoute: GetPage(name: errorPageRoute, page: () => ErrorPage()),
       debugShowCheckedModeBanner: false,
       title: 'MedIC',
       //home: MainPage(),
@@ -72,7 +98,7 @@ class MyApp extends StatelessWidget {
           TargetPlatform.iOS: FadeUpwardsPageTransitionsBuilder(),
           TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
         }),
-        primaryColor: Colors.indigoAccent,
+        primaryColor: active,
       ),
     );
   }

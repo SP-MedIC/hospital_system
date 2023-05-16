@@ -104,32 +104,44 @@ class _OverViewCardsLargeScreenState extends State<OverviewCardsSmallScreen> {
 
   Card buildCard(name, service,color) {
     return Card(
-      color: color,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                  name,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: light,
-                  )
-              ),
-              SizedBox(
-                height: 8,
-              ),
-              Text(
-                  service == '0' ? "-" : service,
-                  style: TextStyle(
-                      fontSize: 40,
-                      color: darke
-                  )
-              ),
-            ],
+      color: Colors.white,
+      child: ClipPath(
+        child: Container(
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(color: color, width: 10),
+            ),
           ),
+          child: Center(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                    name,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: lightGrey,
+                    )
+                ),
+                SizedBox(
+                  height: 8,
+                ),
+                Text(
+                    service == '0' ? "-" : service,
+                    style: TextStyle(
+                        fontSize: 40,
+                        color: darke
+                    )
+                ),
+              ],
+            ),
+          ),
+        ),
+        clipper: ShapeBorderClipper(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(3)
+            )
         ),
       ),
     );

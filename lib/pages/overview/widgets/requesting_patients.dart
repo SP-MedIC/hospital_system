@@ -36,13 +36,15 @@ class _RequestingPatientsState extends State<RequestingPatients> {
   Map<String, dynamic> ambulanceMap = {};
   List<String> listSymptoms = [];
 
-  //late final Stream<QuerySnapshot> _patientStream;
+  late final Stream<QuerySnapshot> _patientStream;
 
   @override
   void initState() {
     super.initState();
     getPatient();
     updateTriageResult();
+    //Query current = patients.where('hospital_user_id', isEqualTo: myString).orderBy("requested_time",descending: false).where('Status', isEqualTo: 'pending');
+    //_patientStream = current.orderBy('triage_result',descending: true).snapshots();
   }
 
   // Function to update "triage result" field based on different cases
@@ -136,7 +138,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: patients.where('hospital_user_id', isEqualTo: myString).where('Status', isEqualTo: 'pending').orderBy("triage_result",descending: false).orderBy('requested_time',descending: true).snapshots(),
+      stream: patients.where('hospital_user_id', isEqualTo: myString).orderBy("triage_result",).where('Status', isEqualTo: 'pending').snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
@@ -151,51 +153,50 @@ class _RequestingPatientsState extends State<RequestingPatients> {
           numberOfRows = snapshot.data!.docs.length;
         }
         return SingleChildScrollView(
-          scrollDirection: Axis.vertical,
+          scrollDirection: Axis.horizontal,
           child: Column(
             children: [
               SingleChildScrollView(
                 scrollDirection: Axis.vertical,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    columns: const <DataColumn>[
-                      DataColumn2(label: Text('Name', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                      DataColumn(label: Text('Age',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                      DataColumn(label: Text('Gender',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                      DataColumn(label: Text('Birthday',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                      DataColumn(label: Text('Triage Result',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                      DataColumn(label: Text('Full Information',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                    ],
-                    rows: snapshot.data!.docs.map((DocumentSnapshot doc) {
-                      final rowData = doc.data() as Map<String, dynamic>;
+                child: DataTable(
+                  columns: const <DataColumn>[
+                    DataColumn2(label: Text('Name', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                    DataColumn(label: Text('Age',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                    DataColumn(label: Text('Gender',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                    DataColumn(label: Text('Birthday',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                    DataColumn(label: Text('Phone Number',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                    DataColumn(label: Text('Triage Result',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                    DataColumn(label: Text('Full Information',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                  ],
+                  rows: snapshot.data!.docs.map((DocumentSnapshot doc) {
+                    final rowData = doc.data() as Map<String, dynamic>;
 
-                      // Return the corresponding string based on the value of "Triage Result"
-                      String triageResult = rowData['triage_result'].toString();
-                      List<String> listSymptoms = List<String>.from(rowData['Symptoms']);
+                    // Return the corresponding string based on the value of "Triage Result"
+                    String triageResult = rowData['triage_result'].toString();
+                    List<String> listSymptoms = List<String>.from(rowData['Symptoms']);
 
-                      if (rowData['triage_result'] == 'A') {
-                        triageResult = 'Emergency Case';
-                        //print(triageResult);
-                      } else if (rowData['triage_result'] == 'B') {
-                        triageResult = 'Priority Case';
-                      } else if (rowData['triage_result'] == 'C'){
-                        triageResult = 'Non-urgent Case';
-                      }
+                    if (rowData['triage_result'] == 'A') {
+                      triageResult = 'Emergency Case';
+                      //print(triageResult);
+                    } else if (rowData['triage_result'] == 'B') {
+                      triageResult = 'Priority Case';
+                    } else if (rowData['triage_result'] == 'C'){
+                      triageResult = 'Non-urgent Case';
+                    }
 
-                      // create view button widget
-                      final viewButton = viewPatientInfo(context, rowData, doc, triageResult, listSymptoms);
+                    // create view button widget
+                    final viewButton = viewPatientInfo(context, rowData, doc, triageResult, listSymptoms);
 
-                      return DataRow(cells: [
-                        DataCell(Center(child: Text(rowData['Name:']))),
-                        DataCell(Center(child: Text(rowData['Age'].toString()))),
-                        DataCell(Center(child: Text(rowData['Sex']))),
-                        DataCell(Center(child: Text(rowData['Birthday']))),
-                        DataCell(Center(child: Text(triageResult))),
-                        DataCell(Center(child: viewButton)),
-                      ]);
-                    }).toList().sublist(0, numberOfRows),
-                  ),
+                    return DataRow(cells: [
+                      DataCell(Center(child: Text(rowData['Name']))),
+                      DataCell(Center(child: Text(rowData['Age'].toString()))),
+                      DataCell(Center(child: Text(rowData['Sex']))),
+                      DataCell(Center(child: Text(rowData['Birthday']))),
+                      DataCell(Center(child: Text(rowData['Contact Number']))),
+                      DataCell(Center(child: Text(triageResult))),
+                      DataCell(Center(child: viewButton)),
+                    ]);
+                  }).toList().sublist(0, numberOfRows),
                 ),
               ),
               SizedBox(height: 10),
@@ -253,7 +254,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                     Column(
                       children: [
                         Text('Name'),
-                        Text(data['Name:'], style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text(data['Name'], style: TextStyle(fontWeight: FontWeight.bold)),
                       ],
                     ),
                     SizedBox(height: 5,),
@@ -312,6 +313,10 @@ class _RequestingPatientsState extends State<RequestingPatients> {
               ),
               actions: [
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    onPrimary: light,
+                    primary: Color(0xFFba181b),
+                  ),
                   child: Text('Reject'),
                   onPressed: () {
                     final updatedDoc = {
@@ -330,6 +335,10 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                     },
                 ),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    onPrimary: darke,
+                    primary: Color(0xFFC2FFAD),
+                  ),
                   child: Text('Accept'),
                   onPressed: () async {
                     currentLat = data['Location']['Latitude'];

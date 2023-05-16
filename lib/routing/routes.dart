@@ -15,6 +15,11 @@ const settingsPageRoute = "/profile_settings";
 const authenticationPageDisplayName = "Log out";
 const authenticationPageRoute = "/auth";
 
+const historyPageDisplayName = "Previous Patient";
+const historyPageRoute = "/history";
+
+const errorPageRoute = "/error";
+
 class MenuItem {
   final String name;
   final String route;
@@ -29,4 +34,5 @@ List<MenuItem> sideMenuItemRoutes = [
   MenuItem(patientPageDisplayName, patientPageRoute),
   MenuItem(servicesPageDisplayName, servicesPageRoute),
   MenuItem(settingsPageDisplayName, settingsPageRoute),
+  MenuItem(historyPageDisplayName, historyPageRoute),
 ];

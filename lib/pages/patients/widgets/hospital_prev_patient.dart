@@ -10,12 +10,12 @@ import 'package:hospital_system/widgets/custom_text.dart';
 
 import '../../../helpers/responsiveness.dart';
 
-class ViewPatientInformation extends StatefulWidget {
+class PreviousPatient extends StatefulWidget {
   @override
-  _ViewPatientInformationState createState() => _ViewPatientInformationState();
+  _PreviousPatient createState() => _PreviousPatient();
 }
 
-class _ViewPatientInformationState extends State<ViewPatientInformation> {
+class _PreviousPatient extends State<PreviousPatient> {
 
   CollectionReference patients =
   FirebaseFirestore.instance.collection('hospitals').doc(FirebaseAuth.instance.currentUser!.uid).collection('patient');
@@ -34,66 +34,9 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
   @override
   void initState() {
     super.initState();
-    getListService();
     // Query current = patients.orderBy('accepted_at', descending: false);
     // current = current.orderBy('discharged_at', descending: true);
     // _patientStream = current.orderBy('discharged_at', descending: false).where('discharged_at', isNull: true).snapshots();
-  }
-
-  void getListService() async{
-    DocumentSnapshot userDoc = await FirebaseFirestore.instance
-        .collection('hospitals')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .get();
-    var service = userDoc['use_services'] as Map<String, dynamic>;
-    var serviceNames = service.keys.toList();
-    for (var name in serviceNames) {
-      if (service[name]['availability'] != 0) { // Check if the value is not 0
-        services.add(name); // Add the field name to the list
-      }
-    }
-    services.add('None');
-    // Add the list field value to myList
-    user_services.addAll(List<String>.from(serviceNames));
-  }
-
-  Future<void> updateServiceInUse(String docId, String? newValue, String? prev) async {
-
-    print(prev);
-    CollectionReference hospitalsRef = FirebaseFirestore.instance.collection('hospitals');
-
-// assume we have a document with ID 'user1' in the 'users' collection
-    DocumentReference hospitalRef = hospitalsRef.doc(FirebaseAuth.instance.currentUser!.uid);
-
-// get the document data
-    //DocumentSnapshot userSnapshot = await userRef.get();
-
-    // update the service_in_use field in Firestore
-    hospitalRef.collection('patient')
-        .doc(docId)
-        .update({'Service in use': newValue})
-        .then((value) {
-      print('Service in use updated');
-
-      if (newValue == 'None'){
-        hospitalRef.collection('patient').doc(docId).update({
-          'Status':'discharged',
-          'discharged_at':Timestamp.now(),
-        });
-      }
-
-      // decrement/increment the respective fields under the services map field
-      if (prev != null && prev != newValue) {
-        if (user_services.contains(prev)) {
-          // decrement the field with the same name as previousValue
-          hospitalRef.update({'use_services.$prev.availability': FieldValue.increment(1)});
-        }
-        if (user_services.contains(newValue)) {
-          // increment the field with the same name as newValue
-          hospitalRef.update({'use_services.$newValue.availability': FieldValue.increment(-1)});
-        }
-      }
-    }).catchError((error) => print('Failed to update service in use: $error'));
   }
 
 
@@ -104,7 +47,7 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
       stream:FirebaseFirestore.instance.collection('hospitals')
           .doc(FirebaseAuth.instance.currentUser!.uid)
           .collection('patient')
-          .where('Status', isNotEqualTo: 'discharged')
+          .where('Status', isEqualTo: 'discharged')
           .snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
@@ -146,53 +89,28 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
                 scrollDirection: Axis.horizontal,
                 child: DataTable(
                   columns: const <DataColumn>[
-                    DataColumn2(label: Text('Status', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
                     DataColumn(label: Text('Name',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
                     DataColumn(label: Text('Age',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
                     DataColumn(label: Text('Gender',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
                     DataColumn(label: Text('Birthday',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                    DataColumn(label: Text('Phone Number',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                    DataColumn(label: Text('Service in Use',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
                     DataColumn(label: Text('Full Information',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
                   ],
                   rows: snapshot.data!.docs.where((doc) => searchText.isEmpty ||
                       doc['Name'].toString().toLowerCase().contains(searchText.toLowerCase()))//||
-                      //doc['Status'].toString().toLowerCase().contains(searchText.toLowerCase()))
+                  //doc['Status'].toString().toLowerCase().contains(searchText.toLowerCase()))
                       .map((DocumentSnapshot doc) {
                     final rowData = doc.data() as Map<String, dynamic>;
-                    String prev = rowData['Service in use'];
+
                     List<String> listSymptoms = List<String>.from(rowData['Symptoms']);
 
                     // create view button widget
                     final viewButton = viewPatientInfo(context, rowData, doc, listSymptoms);
-                    final serviceInUse = TextButton(
-                      style: ButtonStyle(
-                        foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
-                        overlayColor: MaterialStateProperty.resolveWith<Color?>(
-                              (Set<MaterialState> states) {
-                            if (states.contains(MaterialState.hovered))
-                              return Colors.lightBlue.withOpacity(0.5);
-                            if (states.contains(MaterialState.focused) ||
-                                states.contains(MaterialState.pressed))
-                              return Colors.lightBlue.withOpacity(0.5);
-                            return null; // Defer to the widget's default.
-                          },
-                        ),
-                      ),
-                      onPressed: () {
-                        serviceUse(context, doc, prev);
-                      },
-                      child: Text(rowData['Service in use'], style: TextStyle(fontWeight: FontWeight.w500, decoration: TextDecoration.underline,),),
-                    );
 
                     return DataRow(cells: [
-                      DataCell(Center(child: Text(rowData['Status']))),
                       DataCell(Center(child: Text(rowData['Name']))),
                       DataCell(Center(child: Text(rowData['Age'].toString()))),
                       DataCell(Center(child: Text(rowData['Sex']))),
                       DataCell(Center(child: Text(rowData['Birthday']))),
-                      DataCell(Center(child: Text(rowData['Contact Number'].toString()))),
-                      DataCell(Center(child: serviceInUse)),
                       DataCell(Center(child: viewButton)),
                     ]);
                   }).toList(),
@@ -204,50 +122,6 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
       },
     );
   }
-
-  //Select Service patient currently using
-  Future<dynamic> serviceUse(BuildContext context, DocumentSnapshot<Object?> doc, String prev) {
-    return showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text('Select an option'),
-                            content: SingleChildScrollView(
-                              child: ListBody(
-                                children: services.map((String option) {
-                                  return Padding(
-                                    padding: const EdgeInsets.all(5.0),
-                                    child: ElevatedButton(
-                                      child: Text(option),
-                                      onPressed: () {
-                                        // Do something when the option is selected
-                                        updateServiceInUse(doc.id,option, prev);
-                                        Navigator.of(context).pop();
-                                      },
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                            actions: [
-                              Center(
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    onPrimary: light,
-                                    primary: Colors.redAccent,
-                                  ),
-                                  child: Text('Cancel'),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-  }
-  //View complete Patient Information
   ElevatedButton viewPatientInfo(BuildContext context, Map<String, dynamic> data, DocumentSnapshot<Object?> doc, List<String> listSymptoms) {
     return ElevatedButton(
       onPressed: () {
@@ -265,7 +139,7 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
                         Column(
                           children: [
                             Text('Name'),
-                            Text(data['Name'],
+                            Text(data['Name:'],
                                 style: TextStyle(fontWeight: FontWeight.bold)),
                           ],
                         ),
@@ -345,6 +219,22 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
                           ],
                         ),
                         SizedBox(height: 16.0),
+                        Column(
+                          children: [
+                            Text('Accepted Time'),
+                            Text(data['accepted_at'],
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                        SizedBox(height: 16.0),
+                        Column(
+                          children: [
+                            Text('Discharged Time'),
+                            Text(data['discharged_at'],
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                        SizedBox(height: 16.0),
                       ],
                     ),
                   ),
@@ -370,4 +260,5 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
         'View', style: TextStyle(decoration: TextDecoration.underline,),),
     );
   }
+
 }

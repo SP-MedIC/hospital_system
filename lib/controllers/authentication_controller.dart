@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hospital_system/pages/settings/widgets/add_user_info.dart';
 import 'package:hospital_system/routing/routes.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginController extends GetxController {
   // Reactive variables for email and password
@@ -15,6 +16,8 @@ class LoginController extends GetxController {
   // Reactive variable for error message
   RxString errorMessage = ''.obs;
 
+  RxString status = ''.obs;
+
   // Method to handle login logic
   void doLogin(String email, String password) async {
     try {
@@ -25,9 +28,12 @@ class LoginController extends GetxController {
 
       // Set isLoggedIn to true if authentication is successful
       isLoggedIn.value = true;
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
 
-      //Get.offAndToNamed(rootRoute);
-      // Get the logged-in user's UID
+      // Clear error message
+      errorMessage.value = '';
+
       String uid = FirebaseAuth.instance.currentUser!.uid;
 
       // Check if the user's UID is a document in the 'hospitals' collection
@@ -38,31 +44,50 @@ class LoginController extends GetxController {
         // If the document exists, navigate to the home page
         Get.offAndToNamed(rootRoute);
       } else {
-        // User UID not found in "hospitals" collection, navigate to settings page
-        Get.to(() => AddUserInformation());
+        if (!email.endsWith('medic.com')) {
+          // Redirect to another page if the email doesn't end with "medic.com"
+          Get.toNamed(errorPageRoute);
+        }else{
+          // User UID not found in "hospitals" collection, navigate to settings page
+          Get.to(() => AddUserInformation());
+        }
       }
 
-      // Clear error message
-      errorMessage.value = '';
     } on FirebaseAuthException catch (e) {
       // Handle Firebase authentication exception
       if (e.code == 'user-not-found') {
+        errorMessage.value = 'User not found. Please check your email and password.';
         print('User not found. Please check your email and password.');
       } else if (e.code == 'wrong-password') {
+        errorMessage.value = 'Wrong password. Please check your email and password.';
         print('Wrong password. Please check your email and password.');
       } else {
-        print('Error: ${e.message}');
+        errorMessage.value = 'Error: ${e.message}';
       }
     } catch (e) {
-      print('Error: $e');
+      errorMessage.value = 'Error: $e';
     }
   }
 
-  // Method to handle logout logic
-  void doLogout() {
-    // Perform logout logic
-    // Replace this with your actual logout logic
+  // logout
+  void doLogout() async {
     isLoggedIn.value = false;
-    Get.offAndToNamed(authenticationPageRoute);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', false);
+    Get.offAllNamed(authenticationPageRoute);
+  }
+
+  void doCheckEmail(String email) async{
+    await FirebaseAuth.instance
+        .sendPasswordResetEmail(email: email)
+        .then((value) {
+
+          status.value = "Password reset email sent";
+        })
+        .catchError((e) {
+          status.value = "Failed to send password reset email";
+        });
   }
 }
+
+
