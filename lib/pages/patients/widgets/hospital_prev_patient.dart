@@ -139,7 +139,7 @@ class _PreviousPatient extends State<PreviousPatient> {
                         Column(
                           children: [
                             Text('Name'),
-                            Text(data['Name:'],
+                            Text(data['Name'],
                                 style: TextStyle(fontWeight: FontWeight.bold)),
                           ],
                         ),

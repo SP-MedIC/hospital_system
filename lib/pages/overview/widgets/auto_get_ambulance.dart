@@ -27,7 +27,7 @@ class AutoGetAmbulance{
 
     try {
       var response = await Dio().get(url);
-      //print(response.data);
+      print(response.data);
       if (response.statusCode == 200) {
         //print(response.data);
         for (var row in response.data['rows']) {
@@ -38,7 +38,7 @@ class AutoGetAmbulance{
         }
       }
       else {
-        //print(startLatitude);
+        print(startLatitude);
         return;
       }
     }
@@ -49,17 +49,19 @@ class AutoGetAmbulance{
 
 
   Future<Map<String, dynamic>> main() async {
-    var data = await FirebaseFirestore.instance.collection('users').where('Role', isEqualTo: 'Paramedic')
+    var data = await FirebaseFirestore.instance.collection('users')
+        .where("Role", isEqualTo: "Paramedic")
         .where('availability', isEqualTo: 'Online')
         .where('status', isEqualTo: 'Unassigned').get();
+
     for (var document in data.docs) {
       Map<String, dynamic> data = document.data();
 
       print(data['Full Name']);
 
       var timeTravel = await computeDistance(
-        startLatitude: data['Location']['Latitude'],
-        startLongitude: data['Location']['Longitude'],
+        startLatitude: data['Location']['latitude'].toString(),
+        startLongitude: data['Location']['longitude'].toString(),
         endLatitude: endLat,
         endLongitude: endLng,
         trafficModel: 'best_guess', //integrates live traffic information

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:geocode/geocode.dart';
+import 'package:geocoder2/geocoder2.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:hospital_system/controllers/authentication_controller.dart';
@@ -47,8 +48,7 @@ class _AddUserInformationState extends State<AddUserInformation> {
 
   //String imageUrl = '';
   String _profilePictureUrl = "";
-  final pattern = RegExp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[,\.])[\sA-Za-z\d,.]+$');
-  String address = "";
+  String addressError = "";
   String latitude = "";
   String longitude = "";
   bool showPasswordError = false;
@@ -57,10 +57,6 @@ class _AddUserInformationState extends State<AddUserInformation> {
   @override
   void initState() {
     super.initState();
-    // Retrieve current user's information from Firestore and set the initial values
-    // for the form fields
-    //getUserProfileInfo();
-    //_pickImage();
   }
   String imgUrl = "";
 
@@ -100,80 +96,72 @@ class _AddUserInformationState extends State<AddUserInformation> {
 
   Future submit() async {
     final LoginController loginController = Get.find();
-    //if(passwordConfirmed()){
-    //String uid = FirebaseAuth.instance.currentUser!.uid;
+
     String email = FirebaseAuth.instance.currentUser!.email!;
     print(email);
-    GeoCode geoCode = GeoCode();
-    address = addressController.text;
+    String address = addressController.text.trim();
     String password = passwordController.text.trim();
 
-    await FirebaseAuth.instance.currentUser!.updatePassword(password);
-
     try {
-      Coordinates coordinates = await geoCode.forwardGeocoding(
-          address: address);
-      print("Latitude: ${coordinates.latitude}");
-      print("Longitude: ${coordinates.longitude}");
-      latitude = coordinates.latitude.toString();
-      longitude = coordinates.longitude.toString();
+      GeoData data = await Geocoder2.getDataFromAddress(
+          address: address,
+          googleMapApiKey: "AIzaSyAS8T5voHU_bam5GCQIELBbWirb9bCZZOA");
+      print("Latitude: ${data.latitude}");
+      print("Longitude: ${data.longitude}");
+      latitude = data.latitude.toString();
+      longitude = data.longitude.toString();
       print(latitude.runtimeType);
       print(longitude.runtimeType);
 
+      await FirebaseAuth.instance.currentUser!.updatePassword(password);
+
+      FirebaseFirestore.instance.collection('hospitals').doc(currentUser!.uid).set({
+        'Name':nameController.text.trim(),
+        'email': email,
+        'Address': addressController.text,
+        'Contact_num': numberController.text.trim(),
+        'password':passwordController.text.trim(),
+        'type':selectedType,
+        'Pic_url':imgUrl,
+        'Location': {
+          'Latitude': latitude,
+          'Longitude': longitude,
+        },
+        'use_services':{
+          'Emergency Room':{ //int.tryParse(totalController.text)
+            'availability':int.tryParse(emergencyController.text),
+            'total':int.tryParse(emergencyController.text),
+          },
+          'General Ward':{
+            'availability':int.tryParse(generalController.text),
+            'total':int.tryParse(generalController.text),
+          },
+          'Operating Room':{
+            'availability':int.tryParse(operatingController.text),
+            'total':int.tryParse(operatingController.text),
+          },
+          'Private Room':{
+            'availability':int.tryParse(privateController.text),
+            'total':int.tryParse(privateController.text),
+          },
+          'Labor Room':{
+            'availability':int.tryParse(laborRoomController.text),
+            'total':int.tryParse(laborRoomController.text),
+          },
+        }
+
+      });
+
+      addressError = "";
+      if (currentUser != null) {
+        //signed in
+        if (!mounted) return;
+        loginController.doLogout();
+      }
     } catch (e) {
+      addressError = "Please enter a valid address format (Street, Barangay, Municipality, City, Province, Country)";
       print(e);
     }
-    //List<Location> locations = await locationFromAddress(addressController.text);
-    //Location location = locations.first;
-    //print("latitude: ${location.latitude}, longitude: ${location.longitude}");
-    FirebaseFirestore.instance.collection('hospitals').doc(currentUser!.uid).set({
-      'Name':nameController.text.trim(),
-      'email': email,
-      'Address': addressController.text,
-      'Contact_num': numberController.text,
-      'password':password,
-      'type':selectedType,
-      'Pic_url':imgUrl,
-      'Location': {
-        'Latitude': latitude,
-        'Longitude': longitude,
-      },
-      'use_services':{
-        'Emergency Room':{
-          'availability':emergencyController.text as int,
-          'total':emergencyController.text as int,
-        },
-        'General Ward':{
-          'availability':generalController.text as int,
-          'total':generalController.text as int,
-        },
-        'Operating Room':{
-          'availability':operatingController.text as int,
-          'total':operatingController.text as int,
-        },
-        'Private Room':{
-          'availability':privateController.text as int,
-          'total':privateController.text as int,
-        },
-        'Labor Room':{
-          'availability':laborRoomController.text as int,
-          'total':laborRoomController.text as int,
-        },
-      }
-
-    });
-    //Get.offAndToNamed(authenticationPageRoute);
-    //}
-
-    if (currentUser != null) {
-      //signed in
-      if (!mounted) return;
-      loginController.doLogout();
-    }
-    //} else {
-    //  if (!mounted) return;
-    //  Navigator.pop(context as BuildContext);
-    //}
 
   }
 
@@ -286,29 +274,22 @@ class _AddUserInformationState extends State<AddUserInformation> {
                                 labelText: 'Address',
                               ),
                               validator: (value){
-                                //final pattern = RegExp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[,\.])[\sA-Za-z\d,.]+$');
                                 if (value == null || value.isEmpty) {
                                   return "* Required";
-                                } //else if (!pattern.hasMatch(value)) {
-                                  //return "Please enter a valid address format (Street, Barangay, Municipality, City, Province, Country)";
-                                //}
+                                }
                                 return null;
-                                //if(value == null || value.isEmpty){
-                                  //return "* Required";
-                                //}
-                                //return null;
                               },
                             ),
-                            //Visibility(
-                              //visible: addressController.text.isNotEmpty && !pattern.hasMatch(addressController.text),
-                              //child: Text(
-                                //"Please enter a valid address format (Street, Barangay, Municipality, City, Province, Country)",
-                                //style: TextStyle(
-                                  //color: Colors.red,
-                                  //fontSize: 12.0,
-                                //),
-                              //),
-                            //),
+                            Visibility(
+                              visible: addressController.text.isNotEmpty && addressError != "",
+                              child: Text(
+                                addressError,
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 12.0,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -390,7 +371,7 @@ class _AddUserInformationState extends State<AddUserInformation> {
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return "* Required";
-                              }else if(passwordConfirmed()){
+                              }else if(!passwordConfirmed()){
                                 return "Passwords do not match";
                               }
                               return null;
@@ -463,7 +444,7 @@ class _AddUserInformationState extends State<AddUserInformation> {
       child: TextFormField(
         controller: controller,
         keyboardType: TextInputType.number, // Set the keyboard type to number
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly], // Allow only digits as input
+        //inputFormatters: [FilteringTextInputFormatter.digitsOnly], // Allow only digits as input
         decoration: InputDecoration(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.0),
@@ -472,16 +453,14 @@ class _AddUserInformationState extends State<AddUserInformation> {
           labelText: label,
         ),
         validator: (value) {
+          final numeric =
+          RegExp(r'^-?(([0-9]*)|(([0-9]*)\.([0-9]*)))$');
           if (value == null || value.isEmpty) {
             return "* Required";
-          } else {
-            try {
-              int.parse(value); // Attempt to parse the input as an integer
-              return null; // Return null if parsing succeeds
-            } catch (e) {
-              return "Please enter a valid number. Enter 0 if None.";
-            }
+          } else if (!numeric.hasMatch(value)){
+            return "Please enter a valid number. Enter 0 if None.";
           }
+          return null;
         },
       ),
     );

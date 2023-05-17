@@ -6,7 +6,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:geocode/geocode.dart';
+import 'package:geocoder2/geocoder2.dart';
 import 'package:get/get.dart';
 import 'package:hospital_system/layout.dart';
 import 'package:hospital_system/pages/authentication/login_page.dart';
@@ -40,16 +40,18 @@ class _EditSettingsState extends State<EditSettings> {
 
   //String imageUrl = '';
   //String _profilePictureUrl = "";
+  String addressError = "";
   String imgUrl = "";
   String selectedType = '';
+  String latitude = '';
+  String longitude = '';
+  bool updating = false;
 
   @override
   void initState() {
     super.initState();
     // Retrieve current user's information from Firestore and set the initial values
-    // for the form fields
     getUserProfileInfo();
-    //_pickImage();
   }
 
   void getUserProfileInfo() async {
@@ -102,52 +104,55 @@ class _EditSettingsState extends State<EditSettings> {
 
 
   Future submit() async {
-    final LoginController loginController = Get.find();
-    //if(passwordConfirmed()){
-    //String uid = FirebaseAuth.instance.currentUser!.uid;
+
     String email = FirebaseAuth.instance.currentUser!.email!;
     print(email);
     //GeoCode geoCode = GeoCode();
-    //address = addressController.text;
-    //print(address);
-    //print(address.runtimeType);
+    String address = addressController.text.trim();
+    String password = passwordController.text.trim();
 
-    // try {
-    //   Coordinates coordinates = await geoCode.forwardGeocoding(
-    //       address: address);
-    //   print("Latitude: ${coordinates.latitude}");
-    //   print("Longitude: ${coordinates.longitude}");
-    //   latitude = coordinates.latitude.toString();
-    //   longitude = coordinates.longitude.toString();
-    //   print(latitude.runtimeType);
-    //   print(longitude.runtimeType);
-    //
-    // } catch (e) {
-    //   print(e);
-    // }
-    //List<Location> locations = await locationFromAddress(addressController.text);
-    //Location location = locations.first;
-    //print("latitude: ${location.latitude}, longitude: ${location.longitude}");
-    FirebaseFirestore.instance.collection('hospitals').doc(currentUser!.uid).update({
-      'Name':nameController.text,
-      'Address': addressController.text,
-      'Contact_num': numberController.text,
-      'password':passwordController.text,
-      'type':selectedType,
-      'Pic_url':imgUrl,
+    // Simulate an asynchronous operation
+    setState(() {
+      updating = true; // Set updating to true when submit() is called
     });
-    //Get.offAndToNamed(authenticationPageRoute);
-    //}
 
-    //if (currentUser != null) {
-      //signed in
-      //if (!mounted) return;
-      //loginController.doLogout();
-    //}
-    //} else {
-    //  if (!mounted) return;
-    //  Navigator.pop(context as BuildContext);
-    //}
+    // Perform the submit operation
+    await Future.delayed(Duration(seconds: 2));
+
+    try {
+      GeoData data = await Geocoder2.getDataFromAddress(
+          address: address,
+          googleMapApiKey: "AIzaSyAS8T5voHU_bam5GCQIELBbWirb9bCZZOA");
+      print("Latitude: ${data.latitude}");
+      print("Longitude: ${data.longitude}");
+      latitude = data.latitude.toString();
+      longitude = data.longitude.toString();
+      print(latitude.runtimeType);
+      print(longitude.runtimeType);
+
+      await FirebaseAuth.instance.currentUser!.updatePassword(password);
+
+      FirebaseFirestore.instance.collection('hospitals').doc(currentUser!.uid).update({
+        'Name':nameController.text,
+        'Address': addressController.text,
+        'Contact_num': numberController.text,
+        'password':passwordController.text,
+        'type':selectedType,
+        'Pic_url':imgUrl,
+        'Location':{
+          'Latitude': latitude,
+          'Longitude':longitude,
+        }
+      });
+      addressError = "";
+    } catch (e) {
+      addressError = "Please enter a valid address format (Street, Barangay, Municipality, City, Province, Country)";
+      print(e);
+    }
+
+    setState(() {
+      updating = false; // Set updating back to false after the operation is complete
+    });
 
   }
 
@@ -246,21 +251,35 @@ class _EditSettingsState extends State<EditSettings> {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(left: 0.0, top: 8.0, right: 0.0, bottom: 8.0),
-                      child: TextFormField(
-                        controller: addressController,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            borderSide: const BorderSide(color: Color(0xFFba181b)),
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            controller: addressController,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                                borderSide: const BorderSide(color: Color(0xFFba181b)),
+                              ),
+                              labelText: 'Address',
+                            ),
+                            validator: (value){
+                              if(value == null || value.isEmpty){
+                                return "* Required";
+                              }
+                              return null;
+                            },
                           ),
-                          labelText: 'Address',
-                        ),
-                        validator: (value){
-                          if(value == null || value.isEmpty){
-                            return "* Required";
-                          }
-                          return null;
-                        },
+                          Visibility(
+                            visible: addressController.text.isNotEmpty && addressError != "",
+                            child: Text(
+                              addressError,
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 12.0,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     Padding(
@@ -316,6 +335,8 @@ class _EditSettingsState extends State<EditSettings> {
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return "* Required";
+                            }else if(!passwordConfirmed()){
+                              return "Passwords do not match";
                             }
                             return null;
                           }
@@ -357,11 +378,22 @@ class _EditSettingsState extends State<EditSettings> {
                           side: const BorderSide(color: Color(0xFFba181b)),
                         ),
                         onPressed: () {
-                          if (_formKey.currentState!.validate()){
-                            submit();
+                          if (!updating) {
+                            // Prevent button press if isLoading is true
+                            if (_formKey.currentState!.validate()) {
+                              submit();
+                            }
                           }
+                          // if (_formKey.currentState!.validate()){
+                          //   submit();
+                          // }
                         },
-                        child: const Text('Update',
+                        child: updating
+                            ? CircularProgressIndicator( // Show CircularProgressIndicator when updating is true
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        )
+                            : const Text(
+                          'Update',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 15.0,

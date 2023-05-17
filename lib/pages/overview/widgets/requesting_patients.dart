@@ -98,6 +98,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
       'use_services.Emergency Room.availability': FieldValue.increment(-1),
     });
 
+    print(paramedic);
     if(paramedic != "None"){
       FirebaseFirestore.instance
           .collection('users')
@@ -110,21 +111,24 @@ class _RequestingPatientsState extends State<RequestingPatients> {
     final CollectionReference hospitalPatient =
     FirebaseFirestore.instance.collection('hospitals').doc(userId).collection('patient');
 
+    //Get patient data
     final patient = await FirebaseFirestore.instance
         .collection('hospitals_patients')
         .doc(docId)
         .get();
-    //final DocumentSnapshot documentSnapshot = await patients.doc(docId).get();
 
-    // Check if the document exists
+    // Check if the patient document exists
     if (patient.exists) {
-      // Retrieve the data as a Map<String, dynamic>
+      // Retrieve the patient data as a Map<String, dynamic>
       final Map<String, dynamic> data = patient.data() as Map<String, dynamic>;
 
-      // Add the data to the destination collection
-      final DocumentReference patientDoc = await hospitalPatient.add(data);
+      // create a the same document ID with patient data
+      final DocumentReference patientDoc = hospitalPatient.doc(docId);
 
-      //await hospitalPatient.add(data);
+      //Add the previous data to newly created patient document
+      await patientDoc.set(data);
+
+      //add additional information
       await patientDoc.update({
         'paramedic_id': paramedic,
         'Service in use': "Ambulance",
@@ -132,6 +136,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
         'accepted_at': Timestamp.now(),
         'discharged_at':"",
       });
+
     }
   }
 
@@ -152,11 +157,11 @@ class _RequestingPatientsState extends State<RequestingPatients> {
         if (snapshot.data!.docs.length < numberOfRows) {
           numberOfRows = snapshot.data!.docs.length;
         }
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Column(
-            children: [
-              SingleChildScrollView(
+        return Column(
+          children: [
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
                 child: DataTable(
                   columns: const <DataColumn>[
@@ -199,40 +204,40 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                   }).toList().sublist(0, numberOfRows),
                 ),
               ),
-              SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        numberOfRows = 5;
-                      });
-                    },
-                    child: Text('5'),
-                  ),
-                  SizedBox(width: 10),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        numberOfRows = 10;
-                      });
-                    },
-                    child: Text('10'),
-                  ),
-                  SizedBox(width: 10),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        numberOfRows = snapshot.data!.docs.length;
-                      });
-                    },
-                    child: Text('All'),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            ),
+            SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      numberOfRows = 5;
+                    });
+                  },
+                  child: Text('5'),
+                ),
+                SizedBox(width: 10),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      numberOfRows = 10;
+                    });
+                  },
+                  child: Text('10'),
+                ),
+                SizedBox(width: 10),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      numberOfRows = snapshot.data!.docs.length;
+                    });
+                  },
+                  child: Text('All'),
+                ),
+              ],
+            ),
+          ],
         );
       },
     );
@@ -341,8 +346,8 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                   ),
                   child: Text('Accept'),
                   onPressed: () async {
-                    currentLat = data['Location']['Latitude'];
-                    currentLng = data['Location']['Longitude'];
+                    currentLat = data['Location']['Latitude'].toString();
+                    currentLng = data['Location']['Longitude'].toString();
                     print(currentLat);
                     //travel_mode = data['Travel Mode'].toString();
                     if(data['Travel Mode'] == 'AMBULANCE'){

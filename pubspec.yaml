@@ -48,6 +48,7 @@ dependencies:
   geolocator: ^9.0.2
   geocoding: ^2.1.0
   geocode: ^1.0.2
+  geocoder2: ^1.4.0
   internet_connection_checker: ^1.0.0+1
   connectivity_plus: ^3.0.3
   google_maps_flutter: ^2.2.5
@@ -59,6 +60,7 @@ dependencies:
   fluttertoast: ^8.2.1
   email_validator: ^2.1.16
   sticky_headers: ^0.3.0+2
+  flutter_google_places: ^0.3.0
   #firebase_core: ^2.8.0
   #firebase_core_desktop: ^1.0.2
 
