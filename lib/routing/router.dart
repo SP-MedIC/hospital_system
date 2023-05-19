@@ -25,7 +25,7 @@ Route<dynamic> generateRoute(RouteSettings settings){
     case historyPageRoute:
       return _getPageRoute(PreviousPatientScreen());
     default:
-      return _getPageRoute(AuthenticationPage());
+      return _getPageRoute(OverviewPage());
 
   }
 }

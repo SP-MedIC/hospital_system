@@ -36,6 +36,8 @@ class _RequestingPatientsState extends State<RequestingPatients> {
   Map<String, dynamic> ambulanceMap = {};
   List<String> listSymptoms = [];
 
+  List<DocumentSnapshot> documents = [];
+
   late final Stream<QuerySnapshot> _patientStream;
 
   @override
@@ -143,7 +145,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: patients.where('hospital_user_id', isEqualTo: myString).orderBy("triage_result",).where('Status', isEqualTo: 'pending').snapshots(),
+      stream: patients.where('hospital_user_id', isEqualTo: myString).orderBy("triage_result",).where('Status', isEqualTo: 'pending').limit(numberOfRows).snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
@@ -154,9 +156,11 @@ class _RequestingPatientsState extends State<RequestingPatients> {
           return CircularProgressIndicator();
         }
 
-        if (snapshot.data!.docs.length < numberOfRows) {
-          numberOfRows = snapshot.data!.docs.length;
-        }
+        documents = snapshot.data!.docs;
+        
+        // if (snapshot.data!.docs.length < numberOfRows) {
+        //   numberOfRows = snapshot.data!.docs.length;
+        // }
         return Column(
           children: [
             SingleChildScrollView(
@@ -201,7 +205,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                       DataCell(Center(child: Text(triageResult))),
                       DataCell(Center(child: viewButton)),
                     ]);
-                  }).toList().sublist(0, numberOfRows),
+                  }).toList(),//.sublist(0, numberOfRows),
                 ),
               ),
             ),
