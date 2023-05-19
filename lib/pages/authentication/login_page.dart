@@ -46,27 +46,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // void resetPassword() async {
-  //   if (_formKey.currentState!.validate()) {
-  //     try {
-  //       await FirebaseAuth.instance.sendPasswordResetEmail(
-  //         email: emailController.text.trim(),
-  //       );
-  //       Fluttertoast.showToast(
-  //         msg: "Password reset email sent",
-  //         toastLength: Toast.LENGTH_SHORT,
-  //         gravity: ToastGravity.BOTTOM,
-  //       );
-  //     } catch (e) {
-  //       Fluttertoast.showToast(
-  //         msg: "Failed to send password reset email",
-  //         toastLength: Toast.LENGTH_SHORT,
-  //         gravity: ToastGravity.BOTTOM,
-  //       );
-  //     }
-  //   }
-  // }
-
 
   @override
   void dispose(){

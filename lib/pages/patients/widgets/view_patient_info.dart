@@ -35,9 +35,7 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
   void initState() {
     super.initState();
     getListService();
-    // Query current = patients.orderBy('accepted_at', descending: false);
-    // current = current.orderBy('discharged_at', descending: true);
-    // _patientStream = current.orderBy('discharged_at', descending: false).where('discharged_at', isNull: true).snapshots();
+
   }
 
   void getListService() async{
@@ -47,13 +45,12 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
         .get();
     var service = userDoc['use_services'] as Map<String, dynamic>;
     var serviceNames = service.keys.toList();
-    for (var name in serviceNames) {
-      if (service[name]['availability'] != 0) { // Check if the value is not 0
-        services.add(name); // Add the field name to the list
-      }
-    }
+
+    //Adding list of services to be displayed
+    services.addAll(List<String>.from(serviceNames));
     services.add('None');
-    // Add the list field value to myList
+
+    //Adding list of services for checking
     user_services.addAll(List<String>.from(serviceNames));
   }
 
@@ -65,9 +62,6 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
 // assume we have a document with ID 'user1' in the 'users' collection
     DocumentReference hospitalRef = hospitalsRef.doc(FirebaseAuth.instance.currentUser!.uid);
 
-// get the document data
-    //DocumentSnapshot userSnapshot = await userRef.get();
-
     // update the service_in_use field in Firestore
     hospitalRef.collection('patient')
         .doc(docId)
@@ -78,6 +72,11 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
       if (newValue == 'None'){
         hospitalRef.collection('patient').doc(docId).update({
           'Status':'discharged',
+          'discharged_at':Timestamp.now(),
+        });
+      }else if(newValue == 'Emergency Room'){
+        hospitalRef.collection('patient').doc(docId).update({
+          'Status':'In-patient',
           'discharged_at':Timestamp.now(),
         });
       }
@@ -97,9 +96,9 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
   }
 
 
-
   @override
   Widget build(BuildContext context) {
+
     return StreamBuilder<QuerySnapshot> (
       stream:FirebaseFirestore.instance.collection('hospitals')
           .doc(FirebaseAuth.instance.currentUser!.uid)
@@ -208,45 +207,78 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
   //Select Service patient currently using
   Future<dynamic> serviceUse(BuildContext context, DocumentSnapshot<Object?> doc, String prev) {
     return showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text('Select an option'),
-                            content: SingleChildScrollView(
-                              child: ListBody(
-                                children: services.map((String option) {
-                                  return Padding(
-                                    padding: const EdgeInsets.all(5.0),
-                                    child: ElevatedButton(
-                                      child: Text(option),
-                                      onPressed: () {
-                                        // Do something when the option is selected
-                                        updateServiceInUse(doc.id,option, prev);
-                                        Navigator.of(context).pop();
-                                      },
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                            actions: [
-                              Center(
-                                child: ElevatedButton(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Select an option'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: services.map((String option) {
+                return Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: ElevatedButton(
+                    child: Text(option),
+                    onPressed: () async {
+                      print(option.runtimeType);
+                      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+                          .collection('hospitals')
+                          .doc(FirebaseAuth.instance.currentUser!.uid)
+                          .get();
+                      var serviceData = userDoc.data() as Map<String, dynamic>;
+                      var newservice = serviceData['use_services'][option]['availability'];
+                      print(newservice);
+
+                      if (newservice != 0) {
+                        updateServiceInUse(doc.id, option, prev);
+                        Navigator.of(context).pop();
+                      } else {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Service Unavailable'),
+                              content: Text('The selected service is currently unavailable.'),
+                              actions: [
+                                ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     onPrimary: light,
                                     primary: Colors.redAccent,
                                   ),
-                                  child: Text('Cancel'),
+                                  child: Text('OK'),
                                   onPressed: () {
                                     Navigator.of(context).pop();
                                   },
                                 ),
-                              ),
-                            ],
-                          );
-                        },
-                      );
+                              ],
+                            );
+                          },
+                        );
+                      }
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          actions: [
+            Center(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  onPrimary: light,
+                  primary: Colors.redAccent,
+                ),
+                child: Text('Cancel'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
+
   //View complete Patient Information
   ElevatedButton viewPatientInfo(BuildContext context, Map<String, dynamic> data, DocumentSnapshot<Object?> doc, List<String> listSymptoms) {
     return ElevatedButton(
