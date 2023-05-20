@@ -56,7 +56,6 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
 
   Future<void> updateServiceInUse(String docId, String? newValue, String? prev) async {
 
-    print(prev);
     CollectionReference hospitalsRef = FirebaseFirestore.instance.collection('hospitals');
 
 // assume we have a document with ID 'user1' in the 'users' collection

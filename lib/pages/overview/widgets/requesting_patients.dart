@@ -374,11 +374,9 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                   onPressed: () async {
                     currentLat = data['Location']['Latitude'].toString();
                     currentLng = data['Location']['Longitude'].toString();
-                    print(currentLat);
                     //travel_mode = data['Travel Mode'].toString();
                     if(data['Travel Mode'] == 'AMBULANCE'){
                       ambulanceMap = await AutoGetAmbulance(endLat: currentLat, endLng: currentLng).main();
-                      print("hospital list: $ambulanceMap");
                       var nearest = ambulanceMap.values.cast<num>().reduce(min);
                       ambulanceMap.forEach((key, value) {
                         if (value == nearest) {
