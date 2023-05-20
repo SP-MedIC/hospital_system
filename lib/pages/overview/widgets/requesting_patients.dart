@@ -20,7 +20,6 @@ class _RequestingPatientsState extends State<RequestingPatients> {
   final CollectionReference patients =
   FirebaseFirestore.instance.collection('hospitals_patients');
 
-
   String myString= "";
   String userId = FirebaseAuth.instance.currentUser!.uid;
   final List<DataRow> rows = [];
@@ -38,15 +37,13 @@ class _RequestingPatientsState extends State<RequestingPatients> {
 
   List<DocumentSnapshot> documents = [];
 
-  late final Stream<QuerySnapshot> _patientStream;
+  //late final Stream<QuerySnapshot> _patientStream;
 
   @override
   void initState() {
     super.initState();
     getPatient();
     updateTriageResult();
-    //Query current = patients.where('hospital_user_id', isEqualTo: myString).orderBy("requested_time",descending: false).where('Status', isEqualTo: 'pending');
-    //_patientStream = current.orderBy('triage_result',descending: true).snapshots();
   }
 
   // Function to update "triage result" field based on different cases
@@ -91,7 +88,6 @@ class _RequestingPatientsState extends State<RequestingPatients> {
   });
   }
 
-
   Future<void> createDocument(String? paramedic, String docId, String? triageResult) async {
     FirebaseFirestore.instance
         .collection('hospitals')
@@ -130,22 +126,49 @@ class _RequestingPatientsState extends State<RequestingPatients> {
       //Add the previous data to newly created patient document
       await patientDoc.set(data);
 
-      //add additional information
-      await patientDoc.update({
-        'paramedic_id': paramedic,
-        'Service in use': "Ambulance",
-        'triage_result': triageResult,
-        'accepted_at': Timestamp.now(),
-        'discharged_at':"",
-      });
-
+      if(paramedic == "None"){
+        //add additional information
+        await patientDoc.update({
+          'paramedic_id': paramedic,
+          'Service in use': "None",
+          'Status':"Incoming",
+          'triage_result': triageResult,
+          'accepted_at': Timestamp.now(),
+          'discharged_at':"",
+        });
+      }else {
+        //add additional information
+        await patientDoc.update({
+          'paramedic_id': paramedic,
+          'Service in use': "Ambulance",
+          'triage_result': triageResult,
+          'accepted_at': Timestamp.now(),
+          'discharged_at': "",
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Create the stream based on the query parameters and filters
+    Stream<QuerySnapshot> _patientStream;
+    if (numberOfRows != 5 || numberOfRows != 10) {
+      _patientStream = patients
+          .where('hospital_user_id', isEqualTo: myString)
+          .orderBy("triage_result")
+          .where('Status', isEqualTo: 'pending')
+          .limit(5)
+          .snapshots();
+    } else {
+      _patientStream = patients
+          .where('hospital_user_id', isEqualTo: myString)
+          .orderBy("triage_result")
+          .where('Status', isEqualTo: 'pending')
+          .snapshots();
+    }
     return StreamBuilder<QuerySnapshot>(
-      stream: patients.where('hospital_user_id', isEqualTo: myString).orderBy("triage_result",).where('Status', isEqualTo: 'pending').limit(numberOfRows).snapshots(),
+      stream: _patientStream,//patients.where('hospital_user_id', isEqualTo: myString).orderBy("triage_result",).where('Status', isEqualTo: 'pending').limit(numberOfRows).snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
@@ -156,8 +179,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
           return CircularProgressIndicator();
         }
 
-        documents = snapshot.data!.docs;
-        
+        //final documents = snapshot.data!.docs.take(numberOfRows).toList();
         // if (snapshot.data!.docs.length < numberOfRows) {
         //   numberOfRows = snapshot.data!.docs.length;
         // }
@@ -352,11 +374,9 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                   onPressed: () async {
                     currentLat = data['Location']['Latitude'].toString();
                     currentLng = data['Location']['Longitude'].toString();
-                    print(currentLat);
                     //travel_mode = data['Travel Mode'].toString();
                     if(data['Travel Mode'] == 'AMBULANCE'){
                       ambulanceMap = await AutoGetAmbulance(endLat: currentLat, endLng: currentLng).main();
-                      print("hospital list: $ambulanceMap");
                       var nearest = ambulanceMap.values.cast<num>().reduce(min);
                       ambulanceMap.forEach((key, value) {
                         if (value == nearest) {

@@ -106,7 +106,6 @@ class _EditSettingsState extends State<EditSettings> {
   Future submit() async {
 
     String email = FirebaseAuth.instance.currentUser!.email!;
-    print(email);
     //GeoCode geoCode = GeoCode();
     String address = addressController.text.trim();
     String password = passwordController.text.trim();
