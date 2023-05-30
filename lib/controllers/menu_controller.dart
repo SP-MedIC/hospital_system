@@ -34,7 +34,7 @@ class CustomMenuController extends GetxController{
       case historyPageDisplayName:
         return _customIcon(Icons.history_outlined, itemName);
       default:
-        return _customIcon(Icons.exit_to_app_rounded, itemName);
+        return _customIcon(Icons.home_filled, itemName);
     }
   }
 

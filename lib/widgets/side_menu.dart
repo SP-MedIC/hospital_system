@@ -5,8 +5,8 @@ import 'package:hospital_system/helpers/responsiveness.dart';
 import 'package:hospital_system/routing/routes.dart';
 import 'package:hospital_system/widgets/custom_text.dart';
 import 'package:hospital_system/widgets/side_menu_items.dart';
-import 'package:hospital_system/controllers/navigation_controller.dart';
 import 'package:get/get.dart';
+
 
 class SideMenu extends StatelessWidget {
   const SideMenu({ Key? key }) : super(key: key);

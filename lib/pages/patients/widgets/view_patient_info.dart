@@ -86,7 +86,7 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
           // decrement the field with the same name as previousValue
           hospitalRef.update({'use_services.$prev.availability': FieldValue.increment(1)});
         }
-        if (user_services.contains(newValue)) {
+        if (user_services.contains(newValue) && newValue != "Emergency Room") {
           // increment the field with the same name as newValue
           hospitalRef.update({'use_services.$newValue.availability': FieldValue.increment(-1)});
         }

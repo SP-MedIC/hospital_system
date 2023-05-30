@@ -153,11 +153,12 @@ class _AddUserInformationState extends State<AddUserInformation> {
       });
 
       addressError = "";
-      if (currentUser != null) {
-        //signed in
-        if (!mounted) return;
-        loginController.doLogout();
-      }
+      loginController.doLogout();
+      // if (currentUser != null) {
+      //   //signed in
+      //   if (!mounted) return;
+      //   loginController.doLogout();
+      // }
     } catch (e) {
       addressError = "Please enter a valid address format (Street, Barangay, Municipality, City, Province, Country)";
       print(e);

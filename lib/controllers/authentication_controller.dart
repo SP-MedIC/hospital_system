@@ -5,6 +5,8 @@ import 'package:hospital_system/pages/settings/widgets/add_user_info.dart';
 import 'package:hospital_system/routing/routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../constants/controllers.dart';
+
 class LoginController extends GetxController {
   // Reactive variables for email and password
   RxString email = ''.obs;
@@ -74,6 +76,7 @@ class LoginController extends GetxController {
     isLoggedIn.value = false;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', false);
+    menuController.changeActiveitemTo(sideMenuItemRoutes.first.name);
     Get.offAllNamed(authenticationPageRoute);
   }
 
