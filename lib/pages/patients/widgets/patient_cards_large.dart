@@ -66,7 +66,7 @@ class _OverViewCardsLargeScreenState extends State<OverViewCardsLargeScreen> {
                       SizedBox(
                         width: _width/64,
                       ),
-                      buildCard("Delivery Room", services['Labor Room']['availability'].toString(), Colors.lightBlueAccent.shade100),
+                      buildCard("Labor Room", services['Labor Room']['availability'].toString(), Colors.lightBlueAccent.shade100),
                     ],
                   ),
                 ),
