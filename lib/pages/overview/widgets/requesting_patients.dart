@@ -87,6 +87,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
 
   //Copy and Update the patient document
   Future<void> createDocument(String? paramedic, String docId, String? triageResult) async {
+
     FirebaseFirestore.instance
         .collection('hospitals')
         .doc(FirebaseAuth.instance.currentUser!.uid)
@@ -101,7 +102,11 @@ class _RequestingPatientsState extends State<RequestingPatients> {
           .doc(paramedic)
           .update({
         'status': "Assigned",
-        'assign_patient': docId,    });
+        'assigned_patient':{
+          'assign_patient': docId,
+          'hospital_id':userId.toString(),
+        },
+      });
     }
 
     final CollectionReference hospitalPatient =
@@ -135,7 +140,6 @@ class _RequestingPatientsState extends State<RequestingPatients> {
       }else {
         //add additional information for patient in ambulance
         await patientDoc.update({
-          'hospital_user_id': userId.toString(),
           'paramedic_id': paramedic,
           'Service in use': "Ambulance",
           'triage_result': triageResult,
@@ -368,48 +372,58 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                   ),
                   child: Text('Accept'),
                   onPressed: () async {
-                    //get the patient current latitude and longitude
-                    currentLat = data['Location']['Latitude'].toString();
-                    currentLng = data['Location']['Longitude'].toString();
+                    DocumentSnapshot userDoc = await FirebaseFirestore.instance
+                        .collection('hospitals')
+                        .doc(FirebaseAuth.instance.currentUser!.uid)
+                        .get();
+                    var serviceData = userDoc.data() as Map<String, dynamic>;
+                    var newservice = serviceData['use_services']['Emergency Room']['availability'];
+                    print(newservice);
 
-                   //Checking the mode of travel
-                    if(data['Travel Mode'] == 'AMBULANCE'){
-                      //return list of available ambulances with their traffic time
-                      ambulanceMap = await AutoGetAmbulance(endLat: currentLat, endLng: currentLng).main();
+                    if (newservice != 0) {
+                      //get the patient current latitude and longitude
+                      currentLat = data['Location']['Latitude'].toString();
+                      currentLng = data['Location']['Longitude'].toString();
 
-                      //get the key with the minimum traffic time
-                      var nearest = ambulanceMap.values.cast<num>().reduce(min);
-                      ambulanceMap.forEach((key, value) {
-                        if (value == nearest) {
-                          nearestAmbulance = key;
-                        }
-                      });
-                      print(nearestAmbulance.runtimeType);
-                      //call createDocument
-                      createDocument(nearestAmbulance, doc.id, triageResult);
+                      //Checking the mode of travel
+                      if (data['Travel Mode'] == 'AMBULANCE') {
+                        //return list of available ambulances with their traffic time
+                        ambulanceMap = await AutoGetAmbulance(
+                            endLat: currentLat, endLng: currentLng).main();
 
-                    }else if (data['Travel Mode'] == 'Private Vehicle'){
-                      //setting nearestAmbulance to None
-                      nearestAmbulance = "None";
-                      //call createDocument
-                      createDocument(nearestAmbulance, doc.id, triageResult);
-                    }
-                    //change patient status to accepted
-                    final updatedDoc = {
-                      'Status': 'accepted',
-                    };
-                    //Update the current document
-                    FirebaseFirestore.instance
-                        .collection('hospitals_patients')
-                        .doc(doc.id)
-                        .update(updatedDoc)
-                        .then((value) {
-                          //Navigator.of(context).pop();
-                        }).catchError((error) {
-                          print('Error updating document: $error');
+                        //get the key with the minimum traffic time
+                        var nearest = ambulanceMap.values.cast<num>().reduce(
+                            min);
+                        ambulanceMap.forEach((key, value) {
+                          if (value == nearest) {
+                            nearestAmbulance = key;
+                          }
                         });
-                    // Pop up alert dialog
-                    Navigator.of(context).pop();
+                        print(nearestAmbulance.runtimeType);
+                        //call createDocument
+                        createDocument(nearestAmbulance, doc.id, triageResult);
+                      } else if (data['Travel Mode'] == 'Private Vehicle') {
+                        //setting nearestAmbulance to None
+                        nearestAmbulance = "None";
+                        //call createDocument
+                        createDocument(nearestAmbulance, doc.id, triageResult);
+                      }
+                      //change patient status to accepted
+                      final updatedDoc = {
+                        'Status': 'accepted',
+                      };
+                      //Update the current document
+                      FirebaseFirestore.instance
+                          .collection('hospitals_patients')
+                          .doc(doc.id)
+                          .update(updatedDoc)
+                          .then((value) {
+                        //Navigator.of(context).pop();
+                      }).catchError((error) {
+                        print('Error updating document: $error');
+                      });
+                      Navigator.of(context).pop();
+                    }
                     },
                 ),
               ],

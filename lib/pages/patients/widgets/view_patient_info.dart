@@ -64,7 +64,8 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
     // update the service_in_use field in Firestore
     hospitalRef.collection('patient')
         .doc(docId)
-        .update({'Service in use': newValue})
+        .update({'Service in use': newValue,
+        })
         .then((value) {
       print('Service in use updated');
 
@@ -73,12 +74,12 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
           'Status':'discharged',
           'discharged_at':Timestamp.now(),
         });
-      }else if(newValue == 'Emergency Room'){
+      }else if(newValue == 'Emergency Room' || newValue == 'Labor Room' || newValue == 'Operating Room'){
         hospitalRef.collection('patient').doc(docId).update({
           'Status':'In-patient',
-          'discharged_at':Timestamp.now(),
         });
       }
+
 
       // decrement/increment the respective fields under the services map field
       if (prev != null && prev != newValue) {
@@ -154,13 +155,12 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
                     DataColumn(label: Text('Full Information',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
                   ],
                   rows: snapshot.data!.docs.where((doc) => searchText.isEmpty ||
-                      doc['Name'].toString().toLowerCase().contains(searchText.toLowerCase()))//||
-                      //doc['Status'].toString().toLowerCase().contains(searchText.toLowerCase()))
+                      doc['Name'].toString().toLowerCase().contains(searchText.toLowerCase()))
                       .map((DocumentSnapshot doc) {
                     final rowData = doc.data() as Map<String, dynamic>;
                     String prev = rowData['Service in use'];
                     List<String> listSymptoms = List<String>.from(rowData['Symptoms']);
-
+                    String status = rowData['Status'];
                     // create view button widget
                     final viewButton = viewPatientInfo(context, rowData, doc, listSymptoms);
                     final serviceInUse = TextButton(
@@ -178,7 +178,7 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
                         ),
                       ),
                       onPressed: () {
-                        serviceUse(context, doc, prev);
+                        serviceUse(context, doc, prev, status);
                       },
                       child: Text(rowData['Service in use'], style: TextStyle(fontWeight: FontWeight.w500, decoration: TextDecoration.underline,),),
                     );
@@ -204,7 +204,7 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
   }
 
   //Select Service patient currently using
-  Future<dynamic> serviceUse(BuildContext context, DocumentSnapshot<Object?> doc, String prev) {
+  Future<dynamic> serviceUse(BuildContext context, DocumentSnapshot<Object?> doc, String prev, String status) {
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -228,8 +228,10 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
                       print(newservice);
 
                       if (newservice != 0) {
-                        updateServiceInUse(doc.id, option, prev);
-                        Navigator.of(context).pop();
+                        if(option != 'Emergency Room' && status == 'In-patient'){
+                          updateServiceInUse(doc.id, option, prev);
+                          Navigator.of(context).pop();
+                        }
                       } else {
                         showDialog(
                           context: context,
