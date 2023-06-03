@@ -84,27 +84,6 @@ class _OverviewPageState extends State<OverviewPage> {
               ],
             )
         ),
-        // Expanded(
-        //     child: Column(
-        //       children: [
-        //         Row(
-        //           children: [
-        //             SizedBox(
-        //               width: 10,
-        //             ),
-        //             CustomText(
-        //               text: "Requesting Patients",
-        //               color: lightGrey,
-        //               weight: FontWeight.bold,
-        //             ),
-        //           ],
-        //         ),
-        //         Container(
-        //           child: RequestingPatients(),
-        //         ),
-        //       ],
-        //     )
-        // )
       ],
     );
   }

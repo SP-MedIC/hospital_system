@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hospital_system/constants/style.dart';
 import 'package:hospital_system/controllers/authentication_controller.dart';
-import 'package:hospital_system/pages/authentication/authentication.dart';
-import 'package:hospital_system/routing/routes.dart';
 
 
+//404
 
 class ErrorPage extends StatefulWidget {
   const ErrorPage({Key? key}) : super(key: key);

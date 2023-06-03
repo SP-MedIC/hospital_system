@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 
-
+//Get the nearest ambulance
 class AutoGetAmbulance{
   String endLat;
   String endLng;
@@ -74,15 +74,15 @@ class AutoGetAmbulance{
       hospitalMap.addAll({document.id: timeTravel});
     }
     print(hospitalMap);
-    var nearest = hospitalMap.values.cast<num>().reduce(min);
-
-    hospitalMap.forEach((key, value) {
-      if (value == nearest) {
-        nearestHospital = key;
-      }
-    });
-    //print(hospitalMap);
-    print(nearestHospital);
+    // var nearest = hospitalMap.values.cast<num>().reduce(min);
+    //
+    // hospitalMap.forEach((key, value) {
+    //   if (value == nearest) {
+    //     nearestHospital = key;
+    //   }
+    // });
+    // //print(hospitalMap);
+    // print(nearestHospital);
     return hospitalMap;
   }
 

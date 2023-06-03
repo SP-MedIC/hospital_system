@@ -3,9 +3,6 @@ import 'package:get/get.dart';
 import 'package:hospital_system/constants/style.dart';
 import 'package:hospital_system/controllers/authentication_controller.dart';
 import 'package:hospital_system/helpers/responsiveness.dart';
-import 'package:hospital_system/pages/authentication/login_page.dart';
-import 'package:hospital_system/pages/settings/settings.dart';
-import 'package:hospital_system/pages/settings/widgets/edit_setting.dart';
 import 'package:hospital_system/widgets/custom_text.dart';
 
 AppBar topNavigationBar(BuildContext context, GlobalKey<ScaffoldState>key, userName, userImage) {

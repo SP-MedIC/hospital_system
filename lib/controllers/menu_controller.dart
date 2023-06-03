@@ -21,6 +21,7 @@ class CustomMenuController extends GetxController{
 
   isHovering(String itemName) => hoverItem.value == itemName;
 
+  //Icons to be displayed with the page name
   Widget returnIconFor(String itemName){
     switch(itemName){
       case overviewPageDisplayName:

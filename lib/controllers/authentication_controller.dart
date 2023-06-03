@@ -20,11 +20,11 @@ class LoginController extends GetxController {
 
   RxString status = ''.obs;
 
-  // Method to handle login logic
+  // login
   void doLogin(String email, String password) async {
     try {
       // Perform authentication with email and password using Firebase Authentication
-      UserCredential userCredential = await FirebaseAuth.instance
+      await FirebaseAuth.instance
           .signInWithEmailAndPassword(
           email: email, password: password);
 

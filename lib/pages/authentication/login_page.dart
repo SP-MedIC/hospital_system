@@ -1,15 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:hospital_system/constants/style.dart';
 import 'package:hospital_system/controllers/authentication_controller.dart';
 import 'package:hospital_system/pages/authentication/forgot_password.dart';
-import 'package:hospital_system/pages/authentication/signup_page.dart';
 
 
 
+//Login Page
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
 
@@ -137,7 +135,6 @@ class _LoginPageState extends State<LoginPage> {
                                 onTap: () {
                                   _togglePassword();
                                 },
-                                //isHiddenPassword = !isHiddenPassword;
                                 child: Icon(
                                     isHiddenPassword? Icons.visibility
                                         : Icons.visibility_off)),

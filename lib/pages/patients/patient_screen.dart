@@ -6,7 +6,6 @@ import 'package:hospital_system/pages/patients/widgets/view_patient_info.dart';
 import 'package:hospital_system/pages/patients/widgets/patient_cards_large.dart';
 import 'package:hospital_system/pages/patients/widgets/patient_cards_medium.dart';
 import 'package:hospital_system/pages/patients/widgets/patient_cards_small.dart';
-import 'package:hospital_system/pages/patients/widgets/patient_info.dart';
 import 'package:hospital_system/widgets/custom_text.dart';
 
 import '../../constants/style.dart';
@@ -66,11 +65,6 @@ class _PatientPageState extends State<PatientPage> {
               ],
             )
         ),
-        // Expanded(
-        //     child: Container(
-        //       child: ViewPatientInformation(),
-        //     )
-        // ),
       ],
     );
   }

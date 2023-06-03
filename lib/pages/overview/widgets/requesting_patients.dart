@@ -1,14 +1,11 @@
 import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 import 'package:hospital_system/pages/overview/widgets/auto_get_ambulance.dart';
-import 'package:hospital_system/pages/patients/widgets/view_patient_info.dart';
 import 'package:hospital_system/constants/style.dart';
-import 'package:hospital_system/widgets/custom_text.dart';
+
 
 class RequestingPatients extends StatefulWidget {
   @override
@@ -37,7 +34,6 @@ class _RequestingPatientsState extends State<RequestingPatients> {
 
   List<DocumentSnapshot> documents = [];
 
-  //late final Stream<QuerySnapshot> _patientStream;
 
   @override
   void initState() {
@@ -74,6 +70,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
     });
   }
 
+  //Get the hospital name patient requested to
   Future<void> getPatient() async {
   final currentUser = FirebaseAuth.instance.currentUser;
   final currentUserDoc = await FirebaseFirestore.instance
@@ -83,11 +80,12 @@ class _RequestingPatientsState extends State<RequestingPatients> {
   final String currentUserName = currentUserDoc.data()!['Name'];
 
   setState(() {
-    // Update the state with the fetched string value
+    // Update the state with the hospital name
     myString = currentUserName.toString();
   });
   }
 
+  //Copy and Update the patient document
   Future<void> createDocument(String? paramedic, String docId, String? triageResult) async {
     FirebaseFirestore.instance
         .collection('hospitals')
@@ -117,17 +115,15 @@ class _RequestingPatientsState extends State<RequestingPatients> {
 
     // Check if the patient document exists
     if (patient.exists) {
-      // Retrieve the patient data as a Map<String, dynamic>
+      // Retrieve, copy and add the patient data
       final Map<String, dynamic> data = patient.data() as Map<String, dynamic>;
 
-      // create a the same document ID with patient data
       final DocumentReference patientDoc = hospitalPatient.doc(docId);
 
-      //Add the previous data to newly created patient document
       await patientDoc.set(data);
 
       if(paramedic == "None"){
-        //add additional information
+        //add additional information for patient in private vechile
         await patientDoc.update({
           'paramedic_id': paramedic,
           'Service in use': "None",
@@ -137,8 +133,9 @@ class _RequestingPatientsState extends State<RequestingPatients> {
           'discharged_at':"",
         });
       }else {
-        //add additional information
+        //add additional information for patient in ambulance
         await patientDoc.update({
+          'hospital_user_id': userId.toString(),
           'paramedic_id': paramedic,
           'Service in use': "Ambulance",
           'triage_result': triageResult,
@@ -168,7 +165,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
           .snapshots();
     }
     return StreamBuilder<QuerySnapshot>(
-      stream: _patientStream,//patients.where('hospital_user_id', isEqualTo: myString).orderBy("triage_result",).where('Status', isEqualTo: 'pending').limit(numberOfRows).snapshots(),
+      stream: _patientStream,
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
@@ -179,10 +176,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
           return CircularProgressIndicator();
         }
 
-        //final documents = snapshot.data!.docs.take(numberOfRows).toList();
-        // if (snapshot.data!.docs.length < numberOfRows) {
-        //   numberOfRows = snapshot.data!.docs.length;
-        // }
+        //Data table
         return Column(
           children: [
             SingleChildScrollView(
@@ -206,9 +200,9 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                     String triageResult = rowData['triage_result'].toString();
                     List<String> listSymptoms = List<String>.from(rowData['Symptoms']);
 
+                    //adding label to triage results category
                     if (rowData['triage_result'] == 'A') {
                       triageResult = 'Emergency Case';
-                      //print(triageResult);
                     } else if (rowData['triage_result'] == 'B') {
                       triageResult = 'Priority Case';
                     } else if (rowData['triage_result'] == 'C'){
@@ -227,11 +221,12 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                       DataCell(Center(child: Text(triageResult))),
                       DataCell(Center(child: viewButton)),
                     ]);
-                  }).toList(),//.sublist(0, numberOfRows),
+                  }).toList(),
                 ),
               ),
             ),
             SizedBox(height: 10),
+            //Adding a filter buttons to set the number of rows
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -269,6 +264,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
     );
   }
 
+  //Widget for the view button
   ElevatedButton viewPatientInfo(BuildContext context, Map<String, dynamic> data, DocumentSnapshot<Object?> doc, String triageResult, List<String> listSymptoms) {
     return ElevatedButton(
       onPressed: () {
@@ -278,7 +274,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
               title: Text("Patient Information"),
               content: SingleChildScrollView(
                 //width: double.maxFinite,
-                //scrollDirection: Axis.vertical,
+                scrollDirection: Axis.vertical,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -372,11 +368,16 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                   ),
                   child: Text('Accept'),
                   onPressed: () async {
+                    //get the patient current latitude and longitude
                     currentLat = data['Location']['Latitude'].toString();
                     currentLng = data['Location']['Longitude'].toString();
-                    //travel_mode = data['Travel Mode'].toString();
+
+                   //Checking the mode of travel
                     if(data['Travel Mode'] == 'AMBULANCE'){
+                      //return list of available ambulances with their traffic time
                       ambulanceMap = await AutoGetAmbulance(endLat: currentLat, endLng: currentLng).main();
+
+                      //get the key with the minimum traffic time
                       var nearest = ambulanceMap.values.cast<num>().reduce(min);
                       ambulanceMap.forEach((key, value) {
                         if (value == nearest) {
@@ -384,14 +385,20 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                         }
                       });
                       print(nearestAmbulance.runtimeType);
+                      //call createDocument
                       createDocument(nearestAmbulance, doc.id, triageResult);
+
                     }else if (data['Travel Mode'] == 'Private Vehicle'){
+                      //setting nearestAmbulance to None
                       nearestAmbulance = "None";
+                      //call createDocument
                       createDocument(nearestAmbulance, doc.id, triageResult);
                     }
+                    //change patient status to accepted
                     final updatedDoc = {
                       'Status': 'accepted',
                     };
+                    //Update the current document
                     FirebaseFirestore.instance
                         .collection('hospitals_patients')
                         .doc(doc.id)
@@ -401,7 +408,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                         }).catchError((error) {
                           print('Error updating document: $error');
                         });
-                    // You can add your logic for accepting the document here
+                    // Pop up alert dialog
                     Navigator.of(context).pop();
                     },
                 ),
