@@ -219,41 +219,48 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
                     child: Text(option),
                     onPressed: () async {
                       print(option.runtimeType);
-                      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-                          .collection('hospitals')
-                          .doc(FirebaseAuth.instance.currentUser!.uid)
-                          .get();
-                      var serviceData = userDoc.data() as Map<String, dynamic>;
-                      var newservice = serviceData['use_services'][option]['availability'];
-                      print(newservice);
+                      if (option == "None"){
+                        updateServiceInUse(doc.id, option, prev);
+                        Navigator.of(context).pop();
+                      }else {
+                        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+                            .collection('hospitals')
+                            .doc(FirebaseAuth.instance.currentUser!.uid)
+                            .get();
+                        var serviceData = userDoc.data() as Map<String, dynamic>;
+                        var newservice = serviceData['use_services'][option]['availability'];
+                        print(newservice);
 
-                      if (newservice != 0) {
-                        if(option != 'Emergency Room' && status == 'In-patient'){
-                          updateServiceInUse(doc.id, option, prev);
-                          Navigator.of(context).pop();
-                        }
-                      } else {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text('Service Unavailable'),
-                              content: Text('The selected service is currently unavailable.'),
-                              actions: [
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    onPrimary: light,
-                                    primary: Colors.redAccent,
+                        if (newservice != 0) {
+                          if (option != 'Emergency Room' &&
+                              status == 'In-patient') {
+                            updateServiceInUse(doc.id, option, prev);
+                            Navigator.of(context).pop();
+                          }
+                        } else {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text('Service Unavailable'),
+                                content: Text(
+                                    'The selected service is currently unavailable.'),
+                                actions: [
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      onPrimary: light,
+                                      primary: Colors.redAccent,
+                                    ),
+                                    child: Text('OK'),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
                                   ),
-                                  child: Text('OK'),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                              ],
-                            );
-                          },
-                        );
+                                ],
+                              );
+                            },
+                          );
+                        }
                       }
                     },
                   ),
