@@ -154,18 +154,20 @@ class _RequestingPatientsState extends State<RequestingPatients> {
   Widget build(BuildContext context) {
     // Create the stream based on the query parameters and filters
     Stream<QuerySnapshot> _patientStream;
-    if (numberOfRows != 5 || numberOfRows != 10) {
+    if (numberOfRows == 5 || numberOfRows == 10) {
       _patientStream = patients
           .where('hospital_user_id', isEqualTo: myString)
           .orderBy("triage_result")
           .where('Status', isEqualTo: 'pending')
-          .limit(5)
+          //.orderBy("triage_result")
+          .limit(numberOfRows)
           .snapshots();
     } else {
       _patientStream = patients
           .where('hospital_user_id', isEqualTo: myString)
           .orderBy("triage_result")
           .where('Status', isEqualTo: 'pending')
+          //.orderBy("")
           .snapshots();
     }
     return StreamBuilder<QuerySnapshot>(

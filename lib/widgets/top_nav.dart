@@ -37,26 +37,12 @@ AppBar topNavigationBar(BuildContext context, GlobalKey<ScaffoldState>key, userN
               icon: Icon(Icons.exit_to_app, color:darke.withOpacity(.7)),
           ),
           Container(
-            width: 1,
-            height: 22,
+            width: 2,
+            height: 25,
             color: lightGrey,
           ),
 
-          SizedBox(
-            width: 24,
-          ),
-
-          CustomText(text: "", color: lightGrey, size: 16, weight: FontWeight.normal,),
-
-          SizedBox(
-            width: 16,
-          ),
-
           Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(30)
-            ),
             child: Container(
               padding: EdgeInsets.all(12),
               margin: EdgeInsets.all(2),
