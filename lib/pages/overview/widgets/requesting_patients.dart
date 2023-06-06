@@ -157,17 +157,17 @@ class _RequestingPatientsState extends State<RequestingPatients> {
     if (numberOfRows == 5 || numberOfRows == 10) {
       _patientStream = patients
           .where('hospital_user_id', isEqualTo: myString)
-          .orderBy("triage_result")
+          .orderBy("triage_result", descending:false)
           .where('Status', isEqualTo: 'pending')
-          //.orderBy("triage_result")
+          .orderBy("requested_time", descending:false)
           .limit(numberOfRows)
           .snapshots();
     } else {
       _patientStream = patients
           .where('hospital_user_id', isEqualTo: myString)
-          .orderBy("triage_result")
+          .orderBy("triage_result", descending:false)
           .where('Status', isEqualTo: 'pending')
-          //.orderBy("")
+          .orderBy("requested_time", descending:false)
           .snapshots();
     }
     return StreamBuilder<QuerySnapshot>(
