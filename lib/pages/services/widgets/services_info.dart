@@ -110,44 +110,44 @@ class _ServicesInformationState extends State<ServicesInformation> {
   @override
   Widget build(BuildContext context) {
 
-    return Center(
-      child: Column(
-        children: [
-          StreamBuilder(
-            stream: _userStream,
-            builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-              if (snapshot.hasError) {
-                return const Center(child: Text('Something went wrong'));
-              }
-              else if(snapshot.connectionState == ConnectionState.waiting){
-                return const CircularProgressIndicator();
-              }
+    return Column(
+      children: [
+        StreamBuilder(
+          stream: _userStream,
+          builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+            if (snapshot.hasError) {
+              return const Center(child: Text('Something went wrong'));
+            }
+            else if(snapshot.connectionState == ConnectionState.waiting){
+              return const CircularProgressIndicator();
+            }
 
-              else if (!snapshot.hasData) {
-                return const Center(child: Text('Data Unavailable'));
-              }
+            else if (!snapshot.hasData) {
+              return const Center(child: Text('Data Unavailable'));
+            }
 
-              var data = snapshot.data!.data() as Map<String, dynamic>;
-              var services = data['use_services'] as Map<String, dynamic>;
-              var serviceNames = services.keys.toList();
-              var availability = services.values
-                  .map((service) => service['availability'])
-                  .toList();
-              var total = services.values.map((service) => service['total']).toList();
-              //var List<String> occupied = [];
-              //final servicesList = services.values.toList();
+            var data = snapshot.data!.data() as Map<String, dynamic>;
+            var services = data['use_services'] as Map<String, dynamic>;
+            var serviceNames = services.keys.toList();
+            var availability = services.values
+                .map((service) => service['availability'])
+                .toList();
+            var total = services.values.map((service) => service['total']).toList();
+            //var List<String> occupied = [];
+            //final servicesList = services.values.toList();
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SingleChildScrollView(
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: DataTable(
                       columns: [
-                        DataColumn(label: Text('Service')),
-                        DataColumn(label: Text('Available')),
-                        DataColumn(label: Text('Total')),
-                        DataColumn(label: Text('Update Total')),
+                        DataColumn(label: Text('Service',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                        DataColumn(label: Text('Available',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                        DataColumn(label: Text('Total',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                        DataColumn(label: Text('Update Total',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
                       ],
                       rows: List.generate(
                         serviceNames.length,
@@ -179,12 +179,12 @@ class _ServicesInformationState extends State<ServicesInformation> {
                       ),
                     )
                   ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
+                ),
+              ],
+            );
+          },
+        ),
+      ],
     );
   }
 }

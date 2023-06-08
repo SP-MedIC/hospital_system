@@ -62,24 +62,10 @@ class _OverviewPageState extends State<OverviewPage> {
                 else
                   OverviewCardsSmallScreen(),
                 SizedBox(
-                  height: 10,
+                  height: 15,
                 ),
-                Column(
-                  children: [
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: 10,
-                        ),
-                        CustomText(
-                          text: "Requesting Patients",
-                          color: lightGrey,
-                          weight: FontWeight.bold,
-                        ),
-                      ],
-                    ),
-                    RequestingPatients(),
-                  ],
+                Expanded(
+                    child: RequestingPatients()
                 )
               ],
             )

@@ -3,8 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:hospital_system/pages/overview/widgets/auto_get_ambulance.dart';
 import 'package:hospital_system/constants/style.dart';
+
+import '../../../widgets/custom_text.dart';
 
 
 class RequestingPatients extends StatefulWidget {
@@ -95,20 +98,6 @@ class _RequestingPatientsState extends State<RequestingPatients> {
       'use_services.Emergency Room.availability': FieldValue.increment(-1),
     });
 
-    print(paramedic);
-    if(paramedic != "None"){
-      FirebaseFirestore.instance
-          .collection('users')
-          .doc(paramedic)
-          .update({
-        'status': "Assigned",
-        'assigned_patient':{
-          'assign_patient': docId,
-          'hospital_id':userId.toString(),
-        },
-      });
-    }
-
     final CollectionReference hospitalPatient =
     FirebaseFirestore.instance.collection('hospitals').doc(userId).collection('patient');
 
@@ -148,6 +137,20 @@ class _RequestingPatientsState extends State<RequestingPatients> {
         });
       }
     }
+
+    print(paramedic);
+    if(paramedic != "None"){
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(paramedic)
+          .update({
+        'status': "Assigned",
+        'assigned_patient':{
+          'assign_patient': docId,
+          'hospital_id':userId.toString(),
+        },
+      });
+    }
   }
 
   @override
@@ -170,6 +173,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
           .orderBy("requested_time", descending:false)
           .snapshots();
     }
+    double _width = MediaQuery.of(context).size.width;
     return StreamBuilder<QuerySnapshot>(
       stream: _patientStream,
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -185,50 +189,128 @@ class _RequestingPatientsState extends State<RequestingPatients> {
         //Data table
         return Column(
           children: [
+            Center(
+              child: CustomText(
+                text: "Requesting Patients",
+                color: lightGrey,
+                weight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 15,),
+            // SingleChildScrollView(
+            //   //scrollDirection: Axis.vertical,
+            //   child: SizedBox(
+            //     height: 250.0,
+            //     child: CustomScrollView(
+            //       //physics: NeverScrollableScrollPhysics(),
+            //       slivers: <Widget>[
+            //         SliverStickyHeader(
+            //           header: Container(
+            //             height: 50.0,
+            //             color: Colors.grey[300],
+            //             //alignment: Alignment.centerLeft,
+            //             //padding: EdgeInsets.symmetric(horizontal: 16.0),
+            //             child: Row(
+            //               children: const <Widget>[
+            //                 SizedBox(width: 150.0, child: Center(child: Text('Name', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)))),
+            //                 SizedBox(width: 100.0, child: Center(child: Text('Age', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)))),
+            //                 SizedBox(width: 100.0, child: Center(child: Text('Gender', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)))),
+            //                 SizedBox(width: 200.0, child: Center(child: Text('Birthday', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)))),
+            //                 SizedBox(width: 170.0, child: Center(child: Text('Phone Number', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)))),
+            //                 SizedBox(width: 150.0, child: Center(child: Text('Triage Result', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)))),
+            //                 SizedBox(width: 150.0, child: Center(child: Text('Full Information', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)))),
+            //               ],
+            //             ),
+            //           ),
+            //           sliver: SliverToBoxAdapter(
+            //             child: DataTable(
+            //               columns: [
+            //                 DataColumn(label: Text("")),
+            //                 DataColumn(label: Text("")),
+            //                 DataColumn(label: Text("")),
+            //                 DataColumn(label: Text('')),
+            //                 DataColumn(label: Text('')),
+            //                 DataColumn(label: Text('')),
+            //                 DataColumn(label: Text('')),
+            //               ],
+            //               headingRowHeight: 0,
+            //               rows: snapshot.data!.docs.map((DocumentSnapshot doc) {
+            //             final rowData = doc.data() as Map<String, dynamic>;
+            //
+            //             // Return the corresponding string based on the value of "Triage Result"
+            //             String triageResult = rowData['triage_result'].toString();
+            //             List<String> listSymptoms = List<String>.from(rowData['Symptoms']);
+            //
+            //             //adding label to triage results category
+            //             if (rowData['triage_result'] == 'A') {
+            //               triageResult = 'Emergency Case';
+            //             } else if (rowData['triage_result'] == 'B') {
+            //               triageResult = 'Priority Case';
+            //             } else if (rowData['triage_result'] == 'C'){
+            //               triageResult = 'Non-urgent Case';
+            //             }
+            //
+            //             // create view button widget
+            //             final viewButton = viewPatientInfo(context, rowData, doc, triageResult, listSymptoms);
+            //
+            //             return DataRow(cells: [
+            //               DataCell(Center(child: Text(rowData['Name']))),
+            //               DataCell(Center(child: Text(rowData['Age'].toString()))),
+            //               DataCell(Center(child: Text(rowData['Sex']))),
+            //               DataCell(Center(child: Text(rowData['Birthday']))),
+            //               DataCell(Center(child: Text(rowData['Contact Number']))),
+            //               DataCell(Center(child: Text(triageResult))),
+            //               DataCell(Center(child: viewButton)),
+            //             ]);
+            //           }).toList(),
+            //             ),
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: DataTable(
-                  columns: const <DataColumn>[
-                    DataColumn2(label: Text('Name', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                    DataColumn(label: Text('Age',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                    DataColumn(label: Text('Gender',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                    DataColumn(label: Text('Birthday',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                    DataColumn(label: Text('Phone Number',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                    DataColumn(label: Text('Triage Result',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                    DataColumn(label: Text('Full Information',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                  ],
-                  rows: snapshot.data!.docs.map((DocumentSnapshot doc) {
-                    final rowData = doc.data() as Map<String, dynamic>;
+              child: DataTable(
+                columns: const <DataColumn>[
+                  DataColumn2(label: Text('Name', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                  DataColumn(label: Text('Age',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                  DataColumn(label: Text('Gender',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                  DataColumn(label: Text('Birthday',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                  DataColumn(label: Text('Phone Number',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                  DataColumn(label: Text('Triage Result',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                  DataColumn(label: Text('Full Information',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                ],
+                rows: snapshot.data!.docs.map((DocumentSnapshot doc) {
+                  final rowData = doc.data() as Map<String, dynamic>;
 
-                    // Return the corresponding string based on the value of "Triage Result"
-                    String triageResult = rowData['triage_result'].toString();
-                    List<String> listSymptoms = List<String>.from(rowData['Symptoms']);
+                  // Return the corresponding string based on the value of "Triage Result"
+                  String triageResult = rowData['triage_result'].toString();
+                  List<String> listSymptoms = List<String>.from(rowData['Symptoms']);
 
-                    //adding label to triage results category
-                    if (rowData['triage_result'] == 'A') {
-                      triageResult = 'Emergency Case';
-                    } else if (rowData['triage_result'] == 'B') {
-                      triageResult = 'Priority Case';
-                    } else if (rowData['triage_result'] == 'C'){
-                      triageResult = 'Non-urgent Case';
-                    }
+                  //adding label to triage results category
+                  if (rowData['triage_result'] == 'A') {
+                    triageResult = 'Emergency Case';
+                  } else if (rowData['triage_result'] == 'B') {
+                    triageResult = 'Priority Case';
+                  } else if (rowData['triage_result'] == 'C'){
+                    triageResult = 'Non-urgent Case';
+                  }
 
-                    // create view button widget
-                    final viewButton = viewPatientInfo(context, rowData, doc, triageResult, listSymptoms);
+                  // create view button widget
+                  final viewButton = viewPatientInfo(context, rowData, doc, triageResult, listSymptoms);
 
-                    return DataRow(cells: [
-                      DataCell(Center(child: Text(rowData['Name']))),
-                      DataCell(Center(child: Text(rowData['Age'].toString()))),
-                      DataCell(Center(child: Text(rowData['Sex']))),
-                      DataCell(Center(child: Text(rowData['Birthday']))),
-                      DataCell(Center(child: Text(rowData['Contact Number']))),
-                      DataCell(Center(child: Text(triageResult))),
-                      DataCell(Center(child: viewButton)),
-                    ]);
-                  }).toList(),
-                ),
+                  return DataRow(cells: [
+                    DataCell(Center(child: Text(rowData['Name']))),
+                    DataCell(Center(child: Text(rowData['Age'].toString()))),
+                    DataCell(Center(child: Text(rowData['Sex']))),
+                    DataCell(Center(child: Text(rowData['Birthday']))),
+                    DataCell(Center(child: Text(rowData['Contact Number']))),
+                    DataCell(Center(child: Text(triageResult))),
+                    DataCell(Center(child: viewButton)),
+                  ]);
+                }).toList(),
               ),
             ),
             SizedBox(height: 10),

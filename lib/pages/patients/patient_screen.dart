@@ -61,7 +61,10 @@ class _PatientPageState extends State<PatientPage> {
                 SizedBox(
                   height: 10,
                 ),
-                ViewPatientInformation(),
+                Expanded(
+                    child: ViewPatientInformation(),
+                )
+                // ViewPatientInformation(),
               ],
             )
         ),

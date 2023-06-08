@@ -74,15 +74,7 @@ class AutoGetAmbulance{
       hospitalMap.addAll({document.id: timeTravel});
     }
     print(hospitalMap);
-    // var nearest = hospitalMap.values.cast<num>().reduce(min);
-    //
-    // hospitalMap.forEach((key, value) {
-    //   if (value == nearest) {
-    //     nearestHospital = key;
-    //   }
-    // });
-    // //print(hospitalMap);
-    // print(nearestHospital);
+
     return hospitalMap;
   }
 
