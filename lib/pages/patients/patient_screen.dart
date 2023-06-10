@@ -48,23 +48,30 @@ class _PatientPageState extends State<PatientPage> {
         );
         }),
         Expanded(
-            child: ListView(
+            child: Column(
               children: [
-                if(ResponsiveWidget.islargeScreen(context) ||
-                    ResponsiveWidget.isMediumScreen(context))
-                  if(ResponsiveWidget.isCustomScreen(context))
-                    OverviewCardsMediumScreen()
-                  else
-                    OverViewCardsLargeScreen()
-                else
-                  OverviewCardsSmallScreen(),
+                SizedBox(
+                  height: 150,
+                  child: ListView(
+                    children: [
+                      if(ResponsiveWidget.islargeScreen(context) ||
+                          ResponsiveWidget.isMediumScreen(context))
+                        if(ResponsiveWidget.isCustomScreen(context))
+                          OverviewCardsMediumScreen()
+                        else
+                          OverViewCardsLargeScreen()
+                      else
+                        OverviewCardsSmallScreen(),
+
+                    ],
+                  ),
+                ),
                 SizedBox(
                   height: 10,
                 ),
                 Expanded(
-                    child: ViewPatientInformation(),
-                )
-                // ViewPatientInformation(),
+                  child: ViewPatientInformation(),
+                ),
               ],
             )
         ),

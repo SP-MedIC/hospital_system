@@ -47,28 +47,37 @@ class _OverviewPageState extends State<OverviewPage> {
           ),
         );
         }),
-        //Container(
-          //child: LiveDateTimeScreen(),
-        //),
         Expanded(
-            child: ListView(
-              children: [
-                if(ResponsiveWidget.islargeScreen(context) ||
-                ResponsiveWidget.isMediumScreen(context))
-                  if(ResponsiveWidget.isCustomScreen(context))
-                    OverviewCardsMediumScreen()
-                  else
-                    OverViewCardsLargeScreen()
-                else
-                  OverviewCardsSmallScreen(),
-                SizedBox(
-                  height: 15,
+          child: Column(
+            children: [
+              SizedBox(
+                height: 150,
+                child: ListView(
+                  children: [
+                    if(ResponsiveWidget.islargeScreen(context) ||
+                    ResponsiveWidget.isMediumScreen(context))
+                      if(ResponsiveWidget.isCustomScreen(context))
+                        OverviewCardsMediumScreen()
+                      else
+                        OverViewCardsLargeScreen()
+                    else
+                      OverviewCardsSmallScreen(),
+                  ],
                 ),
-                Expanded(
-                    child: RequestingPatients()
-                )
-              ],
-            )
+              ),
+              SizedBox(
+                height: 15,
+              ),
+              Center(
+                child: CustomText(
+                  text: "Requesting Patients",
+                  color: lightGrey,
+                  weight: FontWeight.bold,
+                ),
+              ),
+              Expanded(child: RequestingPatients())
+            ],
+          ),
         ),
       ],
     );

@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:hospital_system/pages/overview/widgets/auto_get_ambulance.dart';
 import 'package:hospital_system/constants/style.dart';
+import 'package:intl/intl.dart';
 
-import '../../../widgets/custom_text.dart';
 
 
 class RequestingPatients extends StatefulWidget {
@@ -37,12 +37,14 @@ class _RequestingPatientsState extends State<RequestingPatients> {
 
   List<DocumentSnapshot> documents = [];
 
+  int activeAmbulance =0;
 
   @override
   void initState() {
     super.initState();
     getPatient();
     updateTriageResult();
+    //ambulance();
   }
 
   // Function to update "triage result" field based on different cases
@@ -153,6 +155,27 @@ class _RequestingPatientsState extends State<RequestingPatients> {
     }
   }
 
+  Future<void> ambulance() async {
+    print(activeAmbulance);
+    CollectionReference paramedics = FirebaseFirestore.instance.collection('users');
+
+    Query availableParamedics = paramedics
+        .where('Role', isEqualTo: 'Paramedic')
+        .where('availability', isEqualTo: 'Online')
+        .where('status', isEqualTo: 'Unassigned');
+
+    QuerySnapshot querySnapshot = await availableParamedics.get();
+    int totalNumParamedics = querySnapshot.size;
+
+    setState(() {
+      activeAmbulance = totalNumParamedics;
+    });
+
+    print(activeAmbulance);
+    // // Return the stream of the updated total number of documents
+    // return totalNumParamedics;
+  }
+
   @override
   Widget build(BuildContext context) {
     // Create the stream based on the query parameters and filters
@@ -173,7 +196,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
           .orderBy("requested_time", descending:false)
           .snapshots();
     }
-    double _width = MediaQuery.of(context).size.width;
+    double _width = MediaQuery.of(context).size.height;
     return StreamBuilder<QuerySnapshot>(
       stream: _patientStream,
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -185,168 +208,90 @@ class _RequestingPatientsState extends State<RequestingPatients> {
           print(myString);
           return CircularProgressIndicator();
         }
-
         //Data table
-        return Column(
-          children: [
-            Center(
-              child: CustomText(
-                text: "Requesting Patients",
-                color: lightGrey,
-                weight: FontWeight.bold,
+        return SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Column(
+            children: [
+              SizedBox(height: 5,),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columns: const <DataColumn>[
+                    DataColumn2(label: Text('Name', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                    DataColumn(label: Text('Age',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                    DataColumn(label: Text('Gender',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                    DataColumn(label: Text('Birthday',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                    DataColumn(label: Text('Phone Number',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                    DataColumn(label: Text('Triage Result',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                    DataColumn(label: Text('Full Information',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                  ],
+                  rows: snapshot.data!.docs.map((DocumentSnapshot doc) {
+                    final rowData = doc.data() as Map<String, dynamic>;
+
+                    // Return the corresponding string based on the value of "Triage Result"
+                    String triageResult = rowData['triage_result'].toString();
+                    List<String> listSymptoms = List<String>.from(rowData['Symptoms']);
+
+                    //adding label to triage results category
+                    if (rowData['triage_result'] == 'A') {
+                      triageResult = 'Emergency Case';
+                    } else if (rowData['triage_result'] == 'B') {
+                      triageResult = 'Priority Case';
+                    } else if (rowData['triage_result'] == 'C'){
+                      triageResult = 'Non-urgent Case';
+                    }
+
+                    // create view button widget
+                    final viewButton = viewPatientInfo(context, rowData, doc, triageResult, listSymptoms);
+
+                    return DataRow(cells: [
+                      DataCell(Center(child: Text(rowData['Name']))),
+                      DataCell(Center(child: Text(rowData['Age'].toString()))),
+                      DataCell(Center(child: Text(rowData['Sex']))),
+                      DataCell(Center(child: Text(rowData['Birthday']))),
+                      DataCell(Center(child: Text(rowData['Contact Number']))),
+                      DataCell(Center(child: Text(triageResult))),
+                      DataCell(Center(child: viewButton)),
+                    ]);
+                  }).toList(),
+                ),
               ),
-            ),
-            SizedBox(height: 15,),
-            // SingleChildScrollView(
-            //   //scrollDirection: Axis.vertical,
-            //   child: SizedBox(
-            //     height: 250.0,
-            //     child: CustomScrollView(
-            //       //physics: NeverScrollableScrollPhysics(),
-            //       slivers: <Widget>[
-            //         SliverStickyHeader(
-            //           header: Container(
-            //             height: 50.0,
-            //             color: Colors.grey[300],
-            //             //alignment: Alignment.centerLeft,
-            //             //padding: EdgeInsets.symmetric(horizontal: 16.0),
-            //             child: Row(
-            //               children: const <Widget>[
-            //                 SizedBox(width: 150.0, child: Center(child: Text('Name', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)))),
-            //                 SizedBox(width: 100.0, child: Center(child: Text('Age', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)))),
-            //                 SizedBox(width: 100.0, child: Center(child: Text('Gender', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)))),
-            //                 SizedBox(width: 200.0, child: Center(child: Text('Birthday', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)))),
-            //                 SizedBox(width: 170.0, child: Center(child: Text('Phone Number', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)))),
-            //                 SizedBox(width: 150.0, child: Center(child: Text('Triage Result', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)))),
-            //                 SizedBox(width: 150.0, child: Center(child: Text('Full Information', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)))),
-            //               ],
-            //             ),
-            //           ),
-            //           sliver: SliverToBoxAdapter(
-            //             child: DataTable(
-            //               columns: [
-            //                 DataColumn(label: Text("")),
-            //                 DataColumn(label: Text("")),
-            //                 DataColumn(label: Text("")),
-            //                 DataColumn(label: Text('')),
-            //                 DataColumn(label: Text('')),
-            //                 DataColumn(label: Text('')),
-            //                 DataColumn(label: Text('')),
-            //               ],
-            //               headingRowHeight: 0,
-            //               rows: snapshot.data!.docs.map((DocumentSnapshot doc) {
-            //             final rowData = doc.data() as Map<String, dynamic>;
-            //
-            //             // Return the corresponding string based on the value of "Triage Result"
-            //             String triageResult = rowData['triage_result'].toString();
-            //             List<String> listSymptoms = List<String>.from(rowData['Symptoms']);
-            //
-            //             //adding label to triage results category
-            //             if (rowData['triage_result'] == 'A') {
-            //               triageResult = 'Emergency Case';
-            //             } else if (rowData['triage_result'] == 'B') {
-            //               triageResult = 'Priority Case';
-            //             } else if (rowData['triage_result'] == 'C'){
-            //               triageResult = 'Non-urgent Case';
-            //             }
-            //
-            //             // create view button widget
-            //             final viewButton = viewPatientInfo(context, rowData, doc, triageResult, listSymptoms);
-            //
-            //             return DataRow(cells: [
-            //               DataCell(Center(child: Text(rowData['Name']))),
-            //               DataCell(Center(child: Text(rowData['Age'].toString()))),
-            //               DataCell(Center(child: Text(rowData['Sex']))),
-            //               DataCell(Center(child: Text(rowData['Birthday']))),
-            //               DataCell(Center(child: Text(rowData['Contact Number']))),
-            //               DataCell(Center(child: Text(triageResult))),
-            //               DataCell(Center(child: viewButton)),
-            //             ]);
-            //           }).toList(),
-            //             ),
-            //           ),
-            //         ),
-            //       ],
-            //     ),
-            //   ),
-            // ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                columns: const <DataColumn>[
-                  DataColumn2(label: Text('Name', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                  DataColumn(label: Text('Age',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                  DataColumn(label: Text('Gender',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                  DataColumn(label: Text('Birthday',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                  DataColumn(label: Text('Phone Number',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                  DataColumn(label: Text('Triage Result',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                  DataColumn(label: Text('Full Information',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+              SizedBox(height: 10),
+              //Adding a filter buttons to set the number of rows
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        numberOfRows = 5;
+                      });
+                    },
+                    child: Text('5'),
+                  ),
+                  SizedBox(width: 10),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        numberOfRows = 10;
+                      });
+                    },
+                    child: Text('10'),
+                  ),
+                  SizedBox(width: 10),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        numberOfRows = snapshot.data!.docs.length;
+                      });
+                    },
+                    child: Text('All'),
+                  ),
                 ],
-                rows: snapshot.data!.docs.map((DocumentSnapshot doc) {
-                  final rowData = doc.data() as Map<String, dynamic>;
-
-                  // Return the corresponding string based on the value of "Triage Result"
-                  String triageResult = rowData['triage_result'].toString();
-                  List<String> listSymptoms = List<String>.from(rowData['Symptoms']);
-
-                  //adding label to triage results category
-                  if (rowData['triage_result'] == 'A') {
-                    triageResult = 'Emergency Case';
-                  } else if (rowData['triage_result'] == 'B') {
-                    triageResult = 'Priority Case';
-                  } else if (rowData['triage_result'] == 'C'){
-                    triageResult = 'Non-urgent Case';
-                  }
-
-                  // create view button widget
-                  final viewButton = viewPatientInfo(context, rowData, doc, triageResult, listSymptoms);
-
-                  return DataRow(cells: [
-                    DataCell(Center(child: Text(rowData['Name']))),
-                    DataCell(Center(child: Text(rowData['Age'].toString()))),
-                    DataCell(Center(child: Text(rowData['Sex']))),
-                    DataCell(Center(child: Text(rowData['Birthday']))),
-                    DataCell(Center(child: Text(rowData['Contact Number']))),
-                    DataCell(Center(child: Text(triageResult))),
-                    DataCell(Center(child: viewButton)),
-                  ]);
-                }).toList(),
               ),
-            ),
-            SizedBox(height: 10),
-            //Adding a filter buttons to set the number of rows
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      numberOfRows = 5;
-                    });
-                  },
-                  child: Text('5'),
-                ),
-                SizedBox(width: 10),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      numberOfRows = 10;
-                    });
-                  },
-                  child: Text('10'),
-                ),
-                SizedBox(width: 10),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      numberOfRows = snapshot.data!.docs.length;
-                    });
-                  },
-                  child: Text('All'),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
@@ -354,8 +299,11 @@ class _RequestingPatientsState extends State<RequestingPatients> {
 
   //Widget for the view button
   ElevatedButton viewPatientInfo(BuildContext context, Map<String, dynamic> data, DocumentSnapshot<Object?> doc, String triageResult, List<String> listSymptoms) {
+    Timestamp timestampRequested = data['requested_time'] as Timestamp;
+    DateTime dateTimeRequested = timestampRequested.toDate();
     return ElevatedButton(
       onPressed: () {
+        ambulance();
         showDialog(
             context: context,
             builder: (context) => AlertDialog(
@@ -423,6 +371,14 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                       ],
                     ),
                     SizedBox(height: 16.0),
+                    Column(
+                      children: [
+                        Text('Accepted Time'),
+                        Text(DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTimeRequested).toString(),
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    SizedBox(height: 16.0),
                   ],
                 ),
               ),
@@ -434,20 +390,31 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                   ),
                   child: Text('Reject'),
                   onPressed: () {
-                    final updatedDoc = {
-                      'Status': 'rejected',
-                    };
-                    FirebaseFirestore.instance
-                        .collection('hospitals_patients')
-                        .doc(doc.id)
-                        .update(updatedDoc)
-                        .then((value) {
-                          //Navigator.of(context).pop();
-                        }).catchError((error) {
-                          print('Error updating document: $error');
-                        });
+                    // Stream<int> availableParamedics = ambulance();
+                    if (activeAmbulance == 0 && data['Travel Mode'] == 'AMBULANCE') {
+                      print('No Ambulance');
+                      FirebaseFirestore.instance
+                          .collection('hospitals_patients')
+                          .doc(doc.id)
+                          .update({'Status': 'No Ambulance'})
+                          .then((value) {
+                        //Navigator.of(context).pop();
+                      }).catchError((error) {
+                        print('Error updating document: $error');
+                      });
+                    } else {
+                      FirebaseFirestore.instance
+                          .collection('hospitals_patients')
+                          .doc(doc.id)
+                          .update({'Status': 'rejected'})
+                          .then((value) {
+                        //Navigator.of(context).pop();
+                      }).catchError((error) {
+                        print('Error updating document: $error');
+                      });
+                    }
                     Navigator.of(context).pop();
-                    },
+                  }
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
