@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 
@@ -8,7 +7,6 @@ class AutoGetAmbulance{
   String endLng;
   AutoGetAmbulance({required this.endLat, required this.endLng});
 
-  //final CollectionReference hospitals = FirebaseFirestore.instance.collection('hospitals');
 
   final Map<String, dynamic> hospitalMap = {};
 
@@ -57,7 +55,7 @@ class AutoGetAmbulance{
     for (var document in data.docs) {
       Map<String, dynamic> data = document.data();
 
-      print(data['Full Name']);
+      //print(data['Full Name']);
 
       var timeTravel = await computeDistance(
         startLatitude: data['Location']['latitude'].toString(),
@@ -67,13 +65,11 @@ class AutoGetAmbulance{
         trafficModel: 'best_guess', //integrates live traffic information
         departureTime: 'now',
       );
-      //print(timeTravel);
-      //print(timeTravel.runtimeType);
 
 
       hospitalMap.addAll({document.id: timeTravel});
     }
-    print(hospitalMap);
+    //print(hospitalMap);
 
     return hospitalMap;
   }

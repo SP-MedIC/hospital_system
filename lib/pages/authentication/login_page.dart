@@ -25,26 +25,14 @@ class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool isHiddenPassword = true;
 
+  //toggle eye password
   void _togglePassword() {
     setState(() {
       isHiddenPassword = !isHiddenPassword;
     });
   }
 
-  Future<bool> logIn() async {
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
-      return true; // Login successful
-    } catch (e) {
-      print("Login error: $e");
-      return false; // Login failed
-    }
-  }
-
-
+  //clear current value
   @override
   void dispose(){
     emailController.dispose();

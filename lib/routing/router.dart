@@ -7,7 +7,7 @@ import 'package:hospital_system/routing/routes.dart';
 
 import '../pages/patients/history_screen.dart';
 
-//Function that will handle the page to be returned
+//Function that will handle the routing configuration
 Route<dynamic> generateRoute(RouteSettings settings){
   switch (settings.name) {
     case overviewPageRoute:
@@ -26,6 +26,7 @@ Route<dynamic> generateRoute(RouteSettings settings){
   }
 }
 
+//return the requested page
 PageRoute _getPageRoute(Widget child){
   return MaterialPageRoute(
     builder: (context) {

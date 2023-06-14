@@ -7,7 +7,7 @@ import 'package:hospital_system/widgets/custom_text.dart';
 import 'package:hospital_system/widgets/side_menu_items.dart';
 import 'package:get/get.dart';
 
-
+//display the side menu
 class SideMenu extends StatelessWidget {
   const SideMenu({ Key? key }) : super(key: key);
 
@@ -19,6 +19,7 @@ class SideMenu extends StatelessWidget {
       color: light,
       child: ListView(
         children: [
+          //menu display setup if the window is in small screen
           if(ResponsiveWidget.isSmallScreen(context))
             Column(
               mainAxisSize: MainAxisSize.min,
@@ -45,8 +46,11 @@ class SideMenu extends StatelessWidget {
                 ),
               ],
             ),
-          Divider(color: lightGrey.withOpacity(.1), ),
 
+          //create a horizontal lign to visually separate content
+          Divider(color: lightGrey.withOpacity(0.1), ),
+
+          //menu display setup when in medium and large screen
           Column(
             mainAxisSize: MainAxisSize.min,
             children: sideMenuItemRoutes

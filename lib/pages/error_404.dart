@@ -18,20 +18,6 @@ class _ErrorPageState extends State<ErrorPage> {
   Widget build(BuildContext context) {
     final LoginController loginController = Get.find();
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Medic'),
-        flexibleSpace: Container(
-          decoration:
-          const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/images/img_uppernavbar.png'),
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-        iconTheme: IconThemeData(color: darke),
-        backgroundColor: Colors.transparent,
-      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -57,9 +57,10 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
 
   Future<void> updateServiceInUse(String docId, String? newValue, String? prev) async {
 
+    //hospital collection reference
     CollectionReference hospitalsRef = FirebaseFirestore.instance.collection('hospitals');
 
-// assume we have a document with ID 'user1' in the 'users' collection
+    // get current user document reference
     DocumentReference hospitalRef = hospitalsRef.doc(FirebaseAuth.instance.currentUser!.uid);
 
     // update the service_in_use field in Firestore
@@ -105,6 +106,7 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
           .doc(FirebaseAuth.instance.currentUser!.uid)
           .collection('patient')
           .where('Status', isNotEqualTo: 'discharged')
+          .orderBy('Status', descending: true)
           .snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
@@ -220,27 +222,43 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
                     child: Text(option),
                     onPressed: () async {
                       print(option.runtimeType);
-                      if (option == "None"){
-                        updateServiceInUse(doc.id, option, prev);
-                        Navigator.of(context).pop();
-                      }else {
-                        DocumentSnapshot userDoc = await FirebaseFirestore.instance
-                            .collection('hospitals')
-                            .doc(FirebaseAuth.instance.currentUser!.uid)
-                            .get();
-                        var serviceData = userDoc.data() as Map<String, dynamic>;
-                        var newservice = serviceData['use_services'][option]['availability'];
-                        print(newservice);
+                      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+                          .collection('hospitals')
+                          .doc(FirebaseAuth.instance.currentUser!.uid)
+                          .get();
+                      var serviceData = userDoc.data() as Map<String, dynamic>;
+                      var newservice = serviceData['use_services'][option]['availability'];
+                      print(newservice);
 
-                        if (newservice != 0) {
-                          if(option != 'Emergency Room'){
-                            updateServiceInUse(doc.id, option, prev);
-                            Navigator.of(context).pop();
-                          }
-                        } else {
-                          noAvailable(context);
+                      if (newservice != 0) {
+                        if(status != 'Incoming'){
+                          updateServiceInUse(doc.id, option, prev);
+                          Navigator.of(context).pop();
                         }
+                      } else {
+                        noAvailable(context);
                       }
+                      // if (option == "None"){
+                      //   updateServiceInUse(doc.id, option, prev);
+                      //   Navigator.of(context).pop();
+                      // }else {
+                      //   DocumentSnapshot userDoc = await FirebaseFirestore.instance
+                      //       .collection('hospitals')
+                      //       .doc(FirebaseAuth.instance.currentUser!.uid)
+                      //       .get();
+                      //   var serviceData = userDoc.data() as Map<String, dynamic>;
+                      //   var newservice = serviceData['use_services'][option]['availability'];
+                      //   print(newservice);
+                      //
+                      //   if (newservice != 0) {
+                      //     if(status != 'Incoming'){
+                      //       updateServiceInUse(doc.id, option, prev);
+                      //       Navigator.of(context).pop();
+                      //     }
+                      //   } else {
+                      //     noAvailable(context);
+                      //   }
+                      // }
                     },
                   ),
                 );

@@ -8,14 +8,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/controllers.dart';
 
 class LoginController extends GetxController {
-  // Reactive variables for email and password
+  // Global variables for email and password
   RxString email = ''.obs;
   RxString password = ''.obs;
 
-  // Reactive variable for login status
+  // Global variable for login status
   RxBool isLoggedIn = false.obs;
 
-  // Reactive variable for error message
+  // Global variable for error message
   RxString errorMessage = ''.obs;
 
   RxString status = ''.obs;
@@ -33,28 +33,28 @@ class LoginController extends GetxController {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', true);
 
-      // Clear error message
       errorMessage.value = '';
 
+      //get current user document
       String uid = FirebaseAuth.instance.currentUser!.uid;
 
-      // Check if the user's UID is a document in the 'hospitals' collection
+      // get current user document
       DocumentSnapshot documentSnapshot =
       await FirebaseFirestore.instance.collection('hospitals').doc(uid).get();
 
       if (documentSnapshot.exists) {
-        // If the document exists, navigate to the home page
+        // if the document exists, navigate to the home page
         Get.offAndToNamed(rootRoute);
       } else {
         if (!email.endsWith('medic.com')) {
           // Redirect to another page if the email doesn't end with "medic.com"
           Get.toNamed(errorPageRoute);
         }else{
-          // User UID not found in "hospitals" collection, navigate to settings page
+          // User UID not found in "hospitals" collection, navigate to set up page
           Get.to(() => AddUserInformation());
         }
       }
-
+      //return error
     } on FirebaseAuthException catch (e) {
       // Handle Firebase authentication exception
       if (e.code == 'user-not-found') {
@@ -73,13 +73,19 @@ class LoginController extends GetxController {
 
   // logout
   void doLogout() async {
+    //change value to false
     isLoggedIn.value = false;
+
+    //To store the current value of the isLoggeIn
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', false);
+    //set the starting page to overview page
     menuController.changeActiveitemTo(sideMenuItemRoutes.first.name);
+    //redirect to the logged in page
     Get.offAllNamed(authenticationPageRoute);
   }
 
+  //forgot password
   void doCheckEmail(String email) async{
     await FirebaseAuth.instance
         .sendPasswordResetEmail(email: email)

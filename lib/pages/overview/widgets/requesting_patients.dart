@@ -155,6 +155,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
     }
   }
 
+  //Check the number of paramedic available
   Future<void> ambulance() async {
     print(activeAmbulance);
     CollectionReference paramedics = FirebaseFirestore.instance.collection('users');
@@ -178,7 +179,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
 
   @override
   Widget build(BuildContext context) {
-    // Create the stream based on the query parameters and filters
+    // Create the stream based on the query and data table filters
     Stream<QuerySnapshot> _patientStream;
     if (numberOfRows == 5 || numberOfRows == 10) {
       _patientStream = patients
@@ -196,7 +197,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
           .orderBy("requested_time", descending:false)
           .snapshots();
     }
-    double _width = MediaQuery.of(context).size.height;
+    //double _width = MediaQuery.of(context).size.height;
     return StreamBuilder<QuerySnapshot>(
       stream: _patientStream,
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {

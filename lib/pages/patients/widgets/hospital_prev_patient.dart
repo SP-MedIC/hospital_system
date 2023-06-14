@@ -30,14 +30,10 @@ class _PreviousPatient extends State<PreviousPatient> {
   String searchText = '';
   TextEditingController controller = TextEditingController();
 
-  late final Stream<QuerySnapshot> _patientStream;
 
   @override
   void initState() {
     super.initState();
-    // Query current = patients.orderBy('accepted_at', descending: false);
-    // current = current.orderBy('discharged_at', descending: true);
-    // _patientStream = current.orderBy('discharged_at', descending: false).where('discharged_at', isNull: true).snapshots();
   }
 
 
@@ -97,8 +93,7 @@ class _PreviousPatient extends State<PreviousPatient> {
                     DataColumn(label: Text('Full Information',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
                   ],
                   rows: snapshot.data!.docs.where((doc) => searchText.isEmpty ||
-                      doc['Name'].toString().toLowerCase().contains(searchText.toLowerCase()))//||
-                  //doc['Status'].toString().toLowerCase().contains(searchText.toLowerCase()))
+                      doc['Name'].toString().toLowerCase().contains(searchText.toLowerCase()))
                       .map((DocumentSnapshot doc) {
                     final rowData = doc.data() as Map<String, dynamic>;
 
@@ -123,6 +118,8 @@ class _PreviousPatient extends State<PreviousPatient> {
       },
     );
   }
+
+  //Patient full information
   ElevatedButton viewPatientInfo(BuildContext context, Map<String, dynamic> data, DocumentSnapshot<Object?> doc, List<String> listSymptoms) {
     Timestamp timestampDischarged = data['discharged_at'] as Timestamp;
     DateTime dateTimeDischarged = timestampDischarged.toDate();

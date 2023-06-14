@@ -7,13 +7,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geocoder2/geocoder2.dart';
-import 'package:get/get.dart';
-import 'package:hospital_system/layout.dart';
-import 'package:hospital_system/pages/authentication/login_page.dart';
-import 'package:hospital_system/routing/routes.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:path/path.dart';
+import 'package:hospital_system/pages/settings/widgets/reauthentiction.dart';
+
 
 import '../../../controllers/authentication_controller.dart';
 
@@ -26,6 +21,7 @@ class EditSettings extends StatefulWidget {
   }
 }
 
+
 class _EditSettingsState extends State<EditSettings> {
 
   DatabaseReference dbRef = FirebaseDatabase.instance.ref();
@@ -33,13 +29,12 @@ class _EditSettingsState extends State<EditSettings> {
 
   final passwordController = TextEditingController();
   final confirmController = TextEditingController();
+  //final currentController = TextEditingController();
   final nameController = TextEditingController();
   final numberController = TextEditingController();
   final addressController = TextEditingController();
 
 
-  //String imageUrl = '';
-  //String _profilePictureUrl = "";
   String addressError = "";
   String imgUrl = "";
   String selectedType = '';
@@ -53,6 +48,16 @@ class _EditSettingsState extends State<EditSettings> {
     // Retrieve current user's information from Firestore and set the initial values
     getUserProfileInfo();
   }
+  void _showReauthenticationDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return ReauthenticationDialog(
+          submitFunction: submit,
+        );
+      },
+    );
+  }
 
   void getUserProfileInfo() async {
     //final user = FirebaseAuth.instance.currentUser;
@@ -60,7 +65,7 @@ class _EditSettingsState extends State<EditSettings> {
     String email = FirebaseAuth.instance.currentUser!.email!;
     setState(() {
       nameController.text = userData['Name'];
-      passwordController.text = userData['password'];
+      //passwordController.text = userData['password'];
       numberController.text = userData['Contact_num'];
       addressController.text = userData['Address'];
       imgUrl = userData['Pic_url'].toString();
@@ -104,9 +109,8 @@ class _EditSettingsState extends State<EditSettings> {
 
 
   Future submit() async {
-
+    //final user = FirebaseAuth.instance.currentUser;
     String email = FirebaseAuth.instance.currentUser!.email!;
-    //GeoCode geoCode = GeoCode();
     String address = addressController.text.trim();
     String password = passwordController.text.trim();
 
@@ -119,6 +123,8 @@ class _EditSettingsState extends State<EditSettings> {
     await Future.delayed(Duration(seconds: 2));
 
     try {
+
+      //Convert inputted address to latitude and longitude
       GeoData data = await Geocoder2.getDataFromAddress(
           address: address,
           googleMapApiKey: "AIzaSyAS8T5voHU_bam5GCQIELBbWirb9bCZZOA");
@@ -129,8 +135,10 @@ class _EditSettingsState extends State<EditSettings> {
       print(latitude.runtimeType);
       print(longitude.runtimeType);
 
+      //update password
       await FirebaseAuth.instance.currentUser!.updatePassword(password);
 
+      //save new information to user document
       FirebaseFirestore.instance.collection('hospitals').doc(currentUser!.uid).update({
         'Name':nameController.text,
         'Address': addressController.text,
@@ -144,6 +152,8 @@ class _EditSettingsState extends State<EditSettings> {
         }
       });
       addressError = "";
+      passwordController.clear();
+      confirmController.clear();
     } catch (e) {
       addressError = "Please enter a valid address format (Street, Barangay, Municipality, City, Province, Country)";
       print(e);
@@ -155,7 +165,7 @@ class _EditSettingsState extends State<EditSettings> {
 
   }
 
-
+//checking match password entered
   bool passwordConfirmed(){
     if(passwordController.text.trim() == confirmController.text.trim()){
       return true;
@@ -163,6 +173,13 @@ class _EditSettingsState extends State<EditSettings> {
       return false;
     }
   }
+
+  // //clear current value
+  // @override
+  // void dispose(){
+  //
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context){
@@ -195,7 +212,7 @@ class _EditSettingsState extends State<EditSettings> {
                     Center(
                       child: GestureDetector(
                         onTap: () {
-                          uploadToStorage(); // Call the _pickImage() function when the profile picture is tapped
+                          uploadToStorage(); // Call the uploadToStorage() function when the profile picture is tapped
                         },
                         child: CircleAvatar(
                           radius: 65,
@@ -380,7 +397,7 @@ class _EditSettingsState extends State<EditSettings> {
                           if (!updating) {
                             // Prevent button press if isLoading is true
                             if (_formKey.currentState!.validate()) {
-                              submit();
+                              _showReauthenticationDialog(context); // Show the reauthentication dialog
                             }
                           }
                           // if (_formKey.currentState!.validate()){
@@ -411,3 +428,6 @@ class _EditSettingsState extends State<EditSettings> {
     );
   }
 }
+
+
+

@@ -1,3 +1,4 @@
+//route names
 const rootRoute = "/";
 
 const overviewPageDisplayName = "Overview";
@@ -28,7 +29,7 @@ class MenuItem {
 }
 
 
-
+//List of Menu items to be displayed with name and page route
 List<MenuItem> sideMenuItemRoutes = [
   MenuItem(overviewPageDisplayName, overviewPageRoute),
   MenuItem(patientPageDisplayName, patientPageRoute),

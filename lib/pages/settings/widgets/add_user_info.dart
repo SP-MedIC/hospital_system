@@ -7,18 +7,11 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
-import 'package:geocode/geocode.dart';
 import 'package:geocoder2/geocoder2.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:hospital_system/controllers/authentication_controller.dart';
-import 'package:hospital_system/layout.dart';
-import 'package:hospital_system/pages/authentication/login_page.dart';
-import 'package:hospital_system/routing/routes.dart';
-import 'package:hospital_system/widgets/top_nav.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:path/path.dart';
+import 'package:hospital_system/pages/settings/widgets/reauthentiction.dart';
+
 
 class AddUserInformation extends StatefulWidget {
   const AddUserInformation({Key? key}) : super(key: key);
@@ -46,8 +39,6 @@ class _AddUserInformationState extends State<AddUserInformation> {
   final laborRoomController = TextEditingController();
 
 
-  //String imageUrl = '';
-  String _profilePictureUrl = "";
   String addressError = "";
   String latitude = "";
   String longitude = "";
@@ -59,6 +50,17 @@ class _AddUserInformationState extends State<AddUserInformation> {
     super.initState();
   }
   String imgUrl = "";
+
+  void _showReauthenticationDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return ReauthenticationDialog(
+          submitFunction: submit,
+        );
+      },
+    );
+  }
 
   uploadToStorage() {
     final user = FirebaseAuth.instance.currentUser!.uid;
@@ -103,6 +105,7 @@ class _AddUserInformationState extends State<AddUserInformation> {
     String password = passwordController.text.trim();
 
     try {
+      //Convert address to latitude and longitude
       GeoData data = await Geocoder2.getDataFromAddress(
           address: address,
           googleMapApiKey: "AIzaSyAS8T5voHU_bam5GCQIELBbWirb9bCZZOA");
@@ -153,12 +156,9 @@ class _AddUserInformationState extends State<AddUserInformation> {
       });
 
       addressError = "";
+      //automatically logs out after submission
       loginController.doLogout();
-      // if (currentUser != null) {
-      //   //signed in
-      //   if (!mounted) return;
-      //   loginController.doLogout();
-      // }
+
     } catch (e) {
       addressError = "Please enter a valid address format (Street, Barangay, Municipality, City, Province, Country)";
       print(e);
@@ -167,6 +167,7 @@ class _AddUserInformationState extends State<AddUserInformation> {
   }
 
 
+  //comparing password and confirm password
   bool passwordConfirmed(){
     if(passwordController.text.trim() == confirmController.text.trim()){
       return true;
@@ -208,7 +209,7 @@ class _AddUserInformationState extends State<AddUserInformation> {
                       Center(
                         child: GestureDetector(
                           onTap: () {
-                            uploadToStorage(); // Call the _pickImage() function when the profile picture is tapped
+                            uploadToStorage(); // Call the uploadToStorage() function when the profile picture is tapped
                           },
                           child: CircleAvatar(
                             radius: 65,
@@ -302,7 +303,7 @@ class _AddUserInformationState extends State<AddUserInformation> {
                               child: Text(
                                 "Services",
                                 style: TextStyle(
-                                  fontSize: 10,
+                                  fontSize: 25,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -416,7 +417,7 @@ class _AddUserInformationState extends State<AddUserInformation> {
                           ),
                           onPressed: () {
                             if (_formKey.currentState!.validate()){
-                              submit();
+                              _showReauthenticationDialog(context);
                             }
                           },
                           child: const Text('Submit',

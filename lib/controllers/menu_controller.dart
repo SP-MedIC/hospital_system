@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:hospital_system/constants/style.dart';
 import 'package:hospital_system/routing/routes.dart';
 
+//to add icons and hover on page names
 class CustomMenuController extends GetxController{
   static CustomMenuController instance = Get.find();
   var activeItem = overviewPageDisplayName.obs;
@@ -17,9 +18,13 @@ class CustomMenuController extends GetxController{
     if(!isActive(itemName)) hoverItem.value = itemName;
   }
 
-  isActive(String itemName) => activeItem.value == itemName;
+  isActive(String itemName) {
+    return activeItem.value == itemName;
+  }
 
-  isHovering(String itemName) => hoverItem.value == itemName;
+  isHovering(String itemName) {
+    return hoverItem.value == itemName;
+  }
 
   //Icons to be displayed with the page name
   Widget returnIconFor(String itemName){

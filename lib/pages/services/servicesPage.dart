@@ -38,9 +38,11 @@ class ServicesPage extends StatelessWidget {
           ),
         )),
         Expanded(
-            child: Container(
-              padding: EdgeInsets.only(top:50, left:50),
-              child: ServicesInformation(),
+            child: SingleChildScrollView(
+              child: Container(
+                padding: EdgeInsets.only(top:50, left:50),
+                child: ServicesInformation(),
+              ),
             )
         ),
       ],
