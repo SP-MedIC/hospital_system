@@ -374,7 +374,7 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                     SizedBox(height: 16.0),
                     Column(
                       children: [
-                        Text('Accepted Time'),
+                        Text('Requested Time'),
                         Text(DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTimeRequested).toString(),
                             style: TextStyle(fontWeight: FontWeight.bold)),
                       ],

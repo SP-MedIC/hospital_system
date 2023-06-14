@@ -226,18 +226,31 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
                           .collection('hospitals')
                           .doc(FirebaseAuth.instance.currentUser!.uid)
                           .get();
-                      var serviceData = userDoc.data() as Map<String, dynamic>;
-                      var newservice = serviceData['use_services'][option]['availability'];
-                      print(newservice);
 
-                      if (newservice != 0) {
-                        if(status != 'Incoming'){
+                      print(option);
+                      print(status);
+
+                      if(status == 'In-patient'){
+                        if(option != "None"){
+                          //get the services
+                          var serviceData = userDoc.data() as Map<String, dynamic>;
+                          //get the number of availability
+                          var newservice = serviceData['use_services'][option]['availability'];
+                          //check if service is 0
+                          if (newservice != 0) {
+                            updateServiceInUse(doc.id, option, prev);
+                            Navigator.of(context).pop();
+                          } else {
+                            noAvailable(context);
+                          }
+                          //If option is None
+                        }else{
                           updateServiceInUse(doc.id, option, prev);
                           Navigator.of(context).pop();
                         }
-                      } else {
-                        noAvailable(context);
+
                       }
+
                       // if (option == "None"){
                       //   updateServiceInUse(doc.id, option, prev);
                       //   Navigator.of(context).pop();
