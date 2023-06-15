@@ -83,7 +83,6 @@ class _ServicesInformationState extends State<ServicesInformation> {
           ElevatedButton(
             onPressed: () async {
               if (totalController.text.isNotEmpty) {
-                await Future.delayed(Duration(seconds: 2));
                 if (formKey.currentState?.validate() ?? false) {
                   int newTotal = int.tryParse(totalController.text) ?? 0;
                   await updateTotal(selectedName, newTotal);
@@ -126,9 +125,19 @@ class _ServicesInformationState extends State<ServicesInformation> {
             //assign values to variable
             final int currentTotal = serviceData['total'] as int;
             final int currentAvailable = serviceData['availability'] as int;
+            int availability = 0;
 
-            //get the current availability given the new total
-            final int availability = (newTotal - currentTotal) + currentAvailable;
+            if(newTotal > currentTotal ){
+              //get the current availability given the new total
+              availability = (newTotal - currentTotal) + currentAvailable;
+            }else{
+              final int currentUse = currentTotal - currentAvailable;
+              availability = newTotal - currentUse;
+              if(availability<=0){
+                newTotal = currentUse;
+                availability=0;
+              }
+            }
 
             //update the document
             await userDoc.update({
