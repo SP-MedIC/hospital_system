@@ -192,6 +192,7 @@ class _EditSettingsState extends State<EditSettings> {
               ),
               child: Form(
                 key: _formKey,
+
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[

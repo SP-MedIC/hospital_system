@@ -157,7 +157,7 @@ class _AddUserInformationState extends State<AddUserInformation> {
 
       addressError = "";
       //automatically logs out after submission
-      loginController.doLogout();
+      loginController.doLogin(email,password);
 
     } catch (e) {
       addressError = "Please enter a valid address format (Street, Barangay, Municipality, City, Province, Country)";
@@ -439,7 +439,7 @@ class _AddUserInformationState extends State<AddUserInformation> {
         )
     );
   }
-
+//textfield form for services
   Container servicesform(String label, TextEditingController controller) {
     return Container(
       padding: EdgeInsets.only(left: 25),
