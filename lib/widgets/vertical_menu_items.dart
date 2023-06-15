@@ -42,14 +42,14 @@ class VerticalMenuItem extends StatelessWidget {
                       child: menuController.returnIconFor(itemName),
                     ),
                     if(!menuController.isActive(itemName))
-                      Flexible(child: CustomText(text: itemName, color: menuController.isHovering(itemName) ? darke : lightGrey, size: 16, weight: FontWeight.normal,
+                      Flexible(child: CustomText(text: itemName, color: menuController.isHovering(itemName) ? darke : lightGrey, size: 15, weight: FontWeight.normal,
                       ),
                       )
                     else
                       Flexible(child: CustomText(
                         text: itemName,
                         color: darke,
-                        size: 18,
+                        size: 14,
                         weight: FontWeight.bold,
                       ))
                   ],

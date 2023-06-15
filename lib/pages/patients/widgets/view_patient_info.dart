@@ -7,6 +7,7 @@ import 'package:hospital_system/pages/patients/widgets/patient_cards_large.dart'
 import 'package:hospital_system/pages/patients/widgets/patient_cards_medium.dart';
 import 'package:hospital_system/pages/patients/widgets/patient_cards_small.dart';
 import 'package:hospital_system/widgets/custom_text.dart';
+import 'package:intl/intl.dart';
 
 import '../../../helpers/responsiveness.dart';
 
@@ -56,29 +57,19 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
 
   Future<void> updateServiceInUse(String docId, String? newValue, String? prev) async {
 
+    //hospital collection reference
     CollectionReference hospitalsRef = FirebaseFirestore.instance.collection('hospitals');
 
-// assume we have a document with ID 'user1' in the 'users' collection
+    // get current user document reference
     DocumentReference hospitalRef = hospitalsRef.doc(FirebaseAuth.instance.currentUser!.uid);
 
     // update the service_in_use field in Firestore
     hospitalRef.collection('patient')
         .doc(docId)
-        .update({'Service in use': newValue})
+        .update({'Service in use': newValue,
+        })
         .then((value) {
       print('Service in use updated');
-
-      if (newValue == 'None'){
-        hospitalRef.collection('patient').doc(docId).update({
-          'Status':'discharged',
-          'discharged_at':Timestamp.now(),
-        });
-      }else if(newValue == 'Emergency Room'){
-        hospitalRef.collection('patient').doc(docId).update({
-          'Status':'In-patient',
-          'discharged_at':Timestamp.now(),
-        });
-      }
 
       // decrement/increment the respective fields under the services map field
       if (prev != null && prev != newValue) {
@@ -86,11 +77,23 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
           // decrement the field with the same name as previousValue
           hospitalRef.update({'use_services.$prev.availability': FieldValue.increment(1)});
         }
-        if (user_services.contains(newValue)) {
+        if (user_services.contains(newValue) ) {
           // increment the field with the same name as newValue
           hospitalRef.update({'use_services.$newValue.availability': FieldValue.increment(-1)});
         }
       }
+
+      if (newValue == 'None'){
+        hospitalRef.collection('patient').doc(docId).update({
+          'Status':'discharged',
+          'discharged_at':Timestamp.now(),
+        });
+      }else if(newValue == 'Emergency Room' || newValue == 'Labor Room' || newValue == 'Operating Room'){
+        hospitalRef.collection('patient').doc(docId).update({
+          'Status':'In-patient',
+        });
+      }
+
     }).catchError((error) => print('Failed to update service in use: $error'));
   }
 
@@ -103,6 +106,7 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
           .doc(FirebaseAuth.instance.currentUser!.uid)
           .collection('patient')
           .where('Status', isNotEqualTo: 'discharged')
+          .orderBy('Status', descending: true)
           .snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
@@ -142,60 +146,59 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
               ),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  columns: const <DataColumn>[
-                    DataColumn2(label: Text('Status', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                    DataColumn(label: Text('Name',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                    DataColumn(label: Text('Age',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                    DataColumn(label: Text('Gender',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                    DataColumn(label: Text('Birthday',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                    DataColumn(label: Text('Phone Number',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                    DataColumn(label: Text('Service in Use',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                    DataColumn(label: Text('Full Information',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                  ],
-                  rows: snapshot.data!.docs.where((doc) => searchText.isEmpty ||
-                      doc['Name'].toString().toLowerCase().contains(searchText.toLowerCase()))//||
-                      //doc['Status'].toString().toLowerCase().contains(searchText.toLowerCase()))
-                      .map((DocumentSnapshot doc) {
-                    final rowData = doc.data() as Map<String, dynamic>;
-                    String prev = rowData['Service in use'];
-                    List<String> listSymptoms = List<String>.from(rowData['Symptoms']);
-
-                    // create view button widget
-                    final viewButton = viewPatientInfo(context, rowData, doc, listSymptoms);
-                    final serviceInUse = TextButton(
-                      style: ButtonStyle(
-                        foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
-                        overlayColor: MaterialStateProperty.resolveWith<Color?>(
-                              (Set<MaterialState> states) {
-                            if (states.contains(MaterialState.hovered))
-                              return Colors.lightBlue.withOpacity(0.5);
-                            if (states.contains(MaterialState.focused) ||
-                                states.contains(MaterialState.pressed))
-                              return Colors.lightBlue.withOpacity(0.5);
-                            return null; // Defer to the widget's default.
-                          },
+                  child: DataTable(
+                    columns: const <DataColumn>[
+                      DataColumn2(label: Text('Status', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                      DataColumn(label: Text('Name',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                      DataColumn(label: Text('Age',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                      DataColumn(label: Text('Gender',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                      DataColumn(label: Text('Birthday',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                      DataColumn(label: Text('Phone Number',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                      DataColumn(label: Text('Service in Use',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                      DataColumn(label: Text('Full Information',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                    ],
+                    rows: snapshot.data!.docs.where((doc) => searchText.isEmpty ||
+                        doc['Name'].toString().toLowerCase().contains(searchText.toLowerCase()))
+                        .map((DocumentSnapshot doc) {
+                      final rowData = doc.data() as Map<String, dynamic>;
+                      String prev = rowData['Service in use'];
+                      List<String> listSymptoms = List<String>.from(rowData['Symptoms']);
+                      String status = rowData['Status'];
+                      // create view button widget
+                      final viewButton = viewPatientInfo(context, rowData, doc, listSymptoms);
+                      final serviceInUse = TextButton(
+                        style: ButtonStyle(
+                          foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                          overlayColor: MaterialStateProperty.resolveWith<Color?>(
+                                (Set<MaterialState> states) {
+                              if (states.contains(MaterialState.hovered))
+                                return Colors.lightBlue.withOpacity(0.5);
+                              if (states.contains(MaterialState.focused) ||
+                                  states.contains(MaterialState.pressed))
+                                return Colors.lightBlue.withOpacity(0.5);
+                              return null; // Defer to the widget's default.
+                            },
+                          ),
                         ),
-                      ),
-                      onPressed: () {
-                        serviceUse(context, doc, prev);
-                      },
-                      child: Text(rowData['Service in use'], style: TextStyle(fontWeight: FontWeight.w500, decoration: TextDecoration.underline,),),
-                    );
+                        onPressed: () {
+                          serviceUse(context, doc, prev, status);
+                        },
+                        child: Text(rowData['Service in use'], style: TextStyle(fontWeight: FontWeight.w500, decoration: TextDecoration.underline,),),
+                      );
 
-                    return DataRow(cells: [
-                      DataCell(Center(child: Text(rowData['Status']))),
-                      DataCell(Center(child: Text(rowData['Name']))),
-                      DataCell(Center(child: Text(rowData['Age'].toString()))),
-                      DataCell(Center(child: Text(rowData['Sex']))),
-                      DataCell(Center(child: Text(rowData['Birthday']))),
-                      DataCell(Center(child: Text(rowData['Contact Number'].toString()))),
-                      DataCell(Center(child: serviceInUse)),
-                      DataCell(Center(child: viewButton)),
-                    ]);
-                  }).toList(),
+                      return DataRow(cells: [
+                        DataCell(Center(child: Text(rowData['Status']))),
+                        DataCell(Center(child: Text(rowData['Name']))),
+                        DataCell(Center(child: Text(rowData['Age'].toString()))),
+                        DataCell(Center(child: Text(rowData['Sex']))),
+                        DataCell(Center(child: Text(rowData['Birthday']))),
+                        DataCell(Center(child: Text(rowData['Contact Number'].toString()))),
+                        DataCell(Center(child: serviceInUse)),
+                        DataCell(Center(child: viewButton)),
+                      ]);
+                    }).toList(),
+                  ),
                 ),
-              ),
             ],
           ),
         );
@@ -204,7 +207,7 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
   }
 
   //Select Service patient currently using
-  Future<dynamic> serviceUse(BuildContext context, DocumentSnapshot<Object?> doc, String prev) {
+  Future<dynamic> serviceUse(BuildContext context, DocumentSnapshot<Object?> doc, String prev, String status) {
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -223,35 +226,29 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
                           .collection('hospitals')
                           .doc(FirebaseAuth.instance.currentUser!.uid)
                           .get();
-                      var serviceData = userDoc.data() as Map<String, dynamic>;
-                      var newservice = serviceData['use_services'][option]['availability'];
-                      print(newservice);
 
-                      if (newservice != 0) {
-                        updateServiceInUse(doc.id, option, prev);
-                        Navigator.of(context).pop();
-                      } else {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text('Service Unavailable'),
-                              content: Text('The selected service is currently unavailable.'),
-                              actions: [
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    onPrimary: light,
-                                    primary: Colors.redAccent,
-                                  ),
-                                  child: Text('OK'),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                              ],
-                            );
-                          },
-                        );
+                      print(option);
+                      print(status);
+
+                      if(status == 'In-patient'){
+                        if(option != "None"){
+                          //get the services
+                          var serviceData = userDoc.data() as Map<String, dynamic>;
+                          //get the number of availability
+                          var newservice = serviceData['use_services'][option]['availability'];
+                          //check if service is 0
+                          if (newservice != 0) {
+                            updateServiceInUse(doc.id, option, prev);
+                            Navigator.of(context).pop();
+                          } else {
+                            noAvailable(context);
+                          }
+                          //If option is None
+                        }else{
+                          updateServiceInUse(doc.id, option, prev);
+                          Navigator.of(context).pop();
+                        }
+
                       }
                     },
                   ),
@@ -278,8 +275,35 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
     );
   }
 
+  Future<dynamic> noAvailable(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Service Unavailable'),
+          content: Text(
+              'The selected service is currently unavailable.'),
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                onPrimary: light,
+                primary: Colors.redAccent,
+              ),
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                },
+            ),
+          ],
+        );
+        },
+    );
+  }
+
   //View complete Patient Information
   ElevatedButton viewPatientInfo(BuildContext context, Map<String, dynamic> data, DocumentSnapshot<Object?> doc, List<String> listSymptoms) {
+    Timestamp timestampAccepted = data['accepted_at'] as Timestamp;
+    DateTime dateTimeAccepted = timestampAccepted.toDate();
     return ElevatedButton(
       onPressed: () {
         showDialog(
@@ -372,6 +396,14 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
                           children: [
                             Text('Mode of Travel'),
                             Text(data['Travel Mode'],
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                        SizedBox(height: 16.0),
+                        Column(
+                          children: [
+                            Text('Accepted Time'),
+                            Text(DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTimeAccepted).toString(),
                                 style: TextStyle(fontWeight: FontWeight.bold)),
                           ],
                         ),

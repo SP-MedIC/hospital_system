@@ -48,10 +48,9 @@ class _OverViewCardsLargeScreenState extends State<OverViewCardsLargeScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 100),
+              Center(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
                       buildCard("General Ward", services['General Ward']['availability'].toString(), Colors.lightBlueAccent.shade100 ),
@@ -66,7 +65,7 @@ class _OverViewCardsLargeScreenState extends State<OverViewCardsLargeScreen> {
                       SizedBox(
                         width: _width/64,
                       ),
-                      buildCard("Delivery Room", services['Labor Room']['availability'].toString(), Colors.lightBlueAccent.shade100),
+                      buildCard("Labor Room", services['Labor Room']['availability'].toString(), Colors.lightBlueAccent.shade100),
                     ],
                   ),
                 ),

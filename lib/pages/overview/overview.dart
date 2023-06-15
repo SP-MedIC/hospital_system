@@ -47,64 +47,38 @@ class _OverviewPageState extends State<OverviewPage> {
           ),
         );
         }),
-        //Container(
-          //child: LiveDateTimeScreen(),
-        //),
         Expanded(
-            child: ListView(
-              children: [
-                if(ResponsiveWidget.islargeScreen(context) ||
-                ResponsiveWidget.isMediumScreen(context))
-                  if(ResponsiveWidget.isCustomScreen(context))
-                    OverviewCardsMediumScreen()
-                  else
-                    OverViewCardsLargeScreen()
-                else
-                  OverviewCardsSmallScreen(),
-                SizedBox(
-                  height: 10,
-                ),
-                Column(
+          child: Column(
+            children: [
+              SizedBox(
+                height: 150,
+                child: ListView(
                   children: [
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: 10,
-                        ),
-                        CustomText(
-                          text: "Requesting Patients",
-                          color: lightGrey,
-                          weight: FontWeight.bold,
-                        ),
-                      ],
-                    ),
-                    RequestingPatients(),
+                    if(ResponsiveWidget.islargeScreen(context) ||
+                    ResponsiveWidget.isMediumScreen(context))
+                      if(ResponsiveWidget.isCustomScreen(context))
+                        OverviewCardsMediumScreen()
+                      else
+                        OverViewCardsLargeScreen()
+                    else
+                      OverviewCardsSmallScreen(),
                   ],
-                )
-              ],
-            )
+                ),
+              ),
+              SizedBox(
+                height: 15,
+              ),
+              Center(
+                child: CustomText(
+                  text: "Requesting Patients",
+                  color: lightGrey,
+                  weight: FontWeight.bold,
+                ),
+              ),
+              Expanded(child: RequestingPatients())
+            ],
+          ),
         ),
-        // Expanded(
-        //     child: Column(
-        //       children: [
-        //         Row(
-        //           children: [
-        //             SizedBox(
-        //               width: 10,
-        //             ),
-        //             CustomText(
-        //               text: "Requesting Patients",
-        //               color: lightGrey,
-        //               weight: FontWeight.bold,
-        //             ),
-        //           ],
-        //         ),
-        //         Container(
-        //           child: RequestingPatients(),
-        //         ),
-        //       ],
-        //     )
-        // )
       ],
     );
   }

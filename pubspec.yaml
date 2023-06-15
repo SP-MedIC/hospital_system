@@ -59,8 +59,9 @@ dependencies:
   shared_preferences: ^2.1.1
   fluttertoast: ^8.2.1
   email_validator: ^2.1.16
-  sticky_headers: ^0.3.0+2
+  #sticky_headers: ^0.3.0+2
   flutter_google_places: ^0.3.0
+  flutter_sticky_header: ^0.6.5
   #firebase_core: ^2.8.0
   #firebase_core_desktop: ^1.0.2
 

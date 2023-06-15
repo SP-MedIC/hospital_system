@@ -73,10 +73,9 @@ class _OverViewCardsLargeScreenState extends State<OverviewCardsMediumScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 100),
+            Center(
+              child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
                     buildCard("Ambulance", totalNumParamedics.toString(), Colors.redAccent ),

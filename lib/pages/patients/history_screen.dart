@@ -3,14 +3,7 @@ import 'package:get/get.dart';
 import 'package:hospital_system/constants/controllers.dart';
 import 'package:hospital_system/helpers/responsiveness.dart';
 import 'package:hospital_system/pages/patients/widgets/hospital_prev_patient.dart';
-import 'package:hospital_system/pages/patients/widgets/view_patient_info.dart';
-import 'package:hospital_system/pages/patients/widgets/patient_cards_large.dart';
-import 'package:hospital_system/pages/patients/widgets/patient_cards_medium.dart';
-import 'package:hospital_system/pages/patients/widgets/patient_cards_small.dart';
-import 'package:hospital_system/pages/patients/widgets/patient_info.dart';
 import 'package:hospital_system/widgets/custom_text.dart';
-
-import '../../constants/style.dart';
 import '../../widgets/live_date_time.dart';
 
 class PreviousPatientScreen extends StatefulWidget {

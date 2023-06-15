@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hospital_system/constants/style.dart';
 import 'package:hospital_system/controllers/authentication_controller.dart';
-import 'package:hospital_system/pages/authentication/authentication.dart';
-import 'package:hospital_system/routing/routes.dart';
 
 
+//404
 
 class ErrorPage extends StatefulWidget {
   const ErrorPage({Key? key}) : super(key: key);
@@ -19,20 +18,6 @@ class _ErrorPageState extends State<ErrorPage> {
   Widget build(BuildContext context) {
     final LoginController loginController = Get.find();
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Medic'),
-        flexibleSpace: Container(
-          decoration:
-          const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/images/img_uppernavbar.png'),
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-        iconTheme: IconThemeData(color: darke),
-        backgroundColor: Colors.transparent,
-      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

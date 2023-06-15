@@ -3,6 +3,7 @@ import 'package:data_table_2/data_table_2.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hospital_system/constants/style.dart';
+import 'package:intl/intl.dart';
 import 'package:hospital_system/pages/patients/widgets/patient_cards_large.dart';
 import 'package:hospital_system/pages/patients/widgets/patient_cards_medium.dart';
 import 'package:hospital_system/pages/patients/widgets/patient_cards_small.dart';
@@ -29,14 +30,10 @@ class _PreviousPatient extends State<PreviousPatient> {
   String searchText = '';
   TextEditingController controller = TextEditingController();
 
-  late final Stream<QuerySnapshot> _patientStream;
 
   @override
   void initState() {
     super.initState();
-    // Query current = patients.orderBy('accepted_at', descending: false);
-    // current = current.orderBy('discharged_at', descending: true);
-    // _patientStream = current.orderBy('discharged_at', descending: false).where('discharged_at', isNull: true).snapshots();
   }
 
 
@@ -96,8 +93,7 @@ class _PreviousPatient extends State<PreviousPatient> {
                     DataColumn(label: Text('Full Information',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
                   ],
                   rows: snapshot.data!.docs.where((doc) => searchText.isEmpty ||
-                      doc['Name'].toString().toLowerCase().contains(searchText.toLowerCase()))//||
-                  //doc['Status'].toString().toLowerCase().contains(searchText.toLowerCase()))
+                      doc['Name'].toString().toLowerCase().contains(searchText.toLowerCase()))
                       .map((DocumentSnapshot doc) {
                     final rowData = doc.data() as Map<String, dynamic>;
 
@@ -122,8 +118,14 @@ class _PreviousPatient extends State<PreviousPatient> {
       },
     );
   }
+
+  //Patient full information
   ElevatedButton viewPatientInfo(BuildContext context, Map<String, dynamic> data, DocumentSnapshot<Object?> doc, List<String> listSymptoms) {
-    return ElevatedButton(
+    Timestamp timestampDischarged = data['discharged_at'] as Timestamp;
+    DateTime dateTimeDischarged = timestampDischarged.toDate();
+    Timestamp timestampAccepted = data['accepted_at'] as Timestamp;
+    DateTime dateTimeAccepted = timestampAccepted.toDate();
+      return ElevatedButton(
       onPressed: () {
         showDialog(
             context: context,
@@ -222,7 +224,7 @@ class _PreviousPatient extends State<PreviousPatient> {
                         Column(
                           children: [
                             Text('Accepted Time'),
-                            Text(data['accepted_at'],
+                            Text(DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTimeAccepted).toString(),
                                 style: TextStyle(fontWeight: FontWeight.bold)),
                           ],
                         ),
@@ -230,7 +232,7 @@ class _PreviousPatient extends State<PreviousPatient> {
                         Column(
                           children: [
                             Text('Discharged Time'),
-                            Text(data['discharged_at'],
+                            Text(DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTimeDischarged).toString(),
                                 style: TextStyle(fontWeight: FontWeight.bold)),
                           ],
                         ),

@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,14 +6,9 @@ import 'package:hospital_system/controllers/authentication_controller.dart';
 import 'package:hospital_system/controllers/menu_controller.dart';
 import 'package:hospital_system/controllers/navigation_controller.dart';
 import 'package:hospital_system/layout.dart';
-import 'package:hospital_system/pages/authentication/authentication.dart';
 import 'package:hospital_system/pages/authentication/login_page.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:hospital_system/pages/overview/widgets/requesting_patients.dart';
-import 'package:hospital_system/pages/patients/widgets/patient_info.dart';
-import 'package:hospital_system/pages/settings/settings.dart';
 import 'package:hospital_system/routing/routes.dart';
-//import 'controllers/auth_controller.dart';
 import 'firebase_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -50,11 +44,6 @@ class _MyAppState extends State<MyApp> {
     checkLoginStatus();
   }
 
-  // void checkLoginStatus() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   bool isUserLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-  //   Get.find<LoginController>().isLoggedIn.value = isUserLoggedIn;
-  // }
   Future<bool> checkLoginStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
@@ -88,12 +77,10 @@ class _MyAppState extends State<MyApp> {
                   }
                 },
               )
-            //binding: LoginBinding(),
           ),
           GetPage(name: rootRoute, page: () {
             return Sitelayout();
           },
-            //binding: HomeBinding(),
           ),
           GetPage(name: errorPageRoute, page: () => ErrorPage()),
         ],
@@ -119,15 +106,6 @@ class _MyAppState extends State<MyApp> {
       );
     },
     );
-  }
-}
-
-
-class LoginBinding extends Bindings {
-  @override
-  void dependencies() {
-    // Bind LoginController to its corresponding class
-    Get.put(LoginController());
   }
 }
 

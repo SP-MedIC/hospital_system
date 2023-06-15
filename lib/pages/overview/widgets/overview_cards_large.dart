@@ -74,10 +74,9 @@ class _OverViewCardsLargeScreenState extends State<OverViewCardsLargeScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 100),
+              Center(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
                       buildCard("Ambulance", totalNumParamedics.toString(), Colors.redAccent ),
@@ -111,7 +110,7 @@ class _OverViewCardsLargeScreenState extends State<OverViewCardsLargeScreen> {
       color: Colors.white,
       child: ClipPath(
         child: Container(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(10.0),
           decoration: BoxDecoration(
             border: Border(
               left: BorderSide(color: color, width: 10),
@@ -134,7 +133,7 @@ class _OverViewCardsLargeScreenState extends State<OverViewCardsLargeScreen> {
                 Text(
                     service == '0' ? "-" : service,
                     style: TextStyle(
-                        fontSize: 40,
+                        fontSize: 30,
                         color: darke
                     )
                 ),

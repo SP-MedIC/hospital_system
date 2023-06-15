@@ -1,11 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:hospital_system/constants/controllers.dart';
 import 'package:hospital_system/routing/router.dart';
-import 'package:hospital_system/routing/routes.dart';
 
+
+//Control the navigationController determine which route is associated with which page (stack)
 Navigator localNavigator() =>   Navigator(
   key: navigationController.navigatorKey,
-  initialRoute: overviewPageRoute,
   onGenerateRoute: generateRoute,
 );
 
