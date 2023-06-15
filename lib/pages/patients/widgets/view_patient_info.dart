@@ -55,7 +55,7 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
     user_services.addAll(List<String>.from(serviceNames));
   }
 
-  Future<void> updateServiceInUse(String docId, String? newValue, String? prev) async {
+  Future<void> updateServiceInUse(String docId, String? newValue, String? prev, String? status) async {
 
     //hospital collection reference
     CollectionReference hospitalsRef = FirebaseFirestore.instance.collection('hospitals');
@@ -72,7 +72,7 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
       print('Service in use updated');
 
       // decrement/increment the respective fields under the services map field
-      if (prev != null && prev != newValue) {
+      if (prev != null && prev != newValue && status != 'Incoming') {
         if (user_services.contains(prev)) {
           // decrement the field with the same name as previousValue
           hospitalRef.update({'use_services.$prev.availability': FieldValue.increment(1)});
@@ -88,7 +88,7 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
           'Status':'discharged',
           'discharged_at':Timestamp.now(),
         });
-      }else if(newValue == 'Emergency Room' || newValue == 'Labor Room' || newValue == 'Operating Room'){
+      }else if(newValue == 'Emergency Room'){
         hospitalRef.collection('patient').doc(docId).update({
           'Status':'In-patient',
         });
@@ -238,17 +238,19 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
                           var newservice = serviceData['use_services'][option]['availability'];
                           //check if service is 0
                           if (newservice != 0) {
-                            updateServiceInUse(doc.id, option, prev);
+                            updateServiceInUse(doc.id, option, prev,status);
                             Navigator.of(context).pop();
                           } else {
                             noAvailable(context);
                           }
                           //If option is None
                         }else{
-                          updateServiceInUse(doc.id, option, prev);
+                          updateServiceInUse(doc.id, option, prev,status);
                           Navigator.of(context).pop();
                         }
-
+                      }else if(status == 'Incoming' && option == 'Emergency Room'){
+                        updateServiceInUse(doc.id, option, prev, status);
+                        Navigator.of(context).pop();
                       }
                     },
                   ),
