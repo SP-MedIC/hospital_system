@@ -148,14 +148,12 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
                 scrollDirection: Axis.horizontal,
                   child: DataTable(
                     columns: const <DataColumn>[
-                      DataColumn2(label: Text('Status', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                      DataColumn(label: Text('Name',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                      DataColumn(label: Text('Age',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                      DataColumn(label: Text('Gender',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                      DataColumn(label: Text('Birthday',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                      DataColumn(label: Text('Phone Number',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                      DataColumn(label: Text('Service in Use',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                      DataColumn(label: Text('Full Information',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
+                      DataColumn2(label: Center(child: Text('Status', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,)))),
+                      DataColumn(label: Center(child: Text('Name',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,)))),
+                      DataColumn(label: Center(child: Text('Birthday',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,)))),
+                      DataColumn(label: Center(child: Text('Phone Number',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,)))),
+                      DataColumn(label: Center(child: Text('Service in Use',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,)))),
+                      DataColumn(label: Center(child: Text('Full Information',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,)))),
                     ],
                     rows: snapshot.data!.docs.where((doc) => searchText.isEmpty ||
                         doc['Name'].toString().toLowerCase().contains(searchText.toLowerCase()))
@@ -164,6 +162,13 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
                       String prev = rowData['Service in use'];
                       List<String> listSymptoms = List<String>.from(rowData['Symptoms']);
                       String status = rowData['Status'];
+                      Color? statusColor;
+
+                      if (status == "Incoming"){
+                        statusColor = Colors.green;
+                      }else if(status == "In-patient"){
+                        statusColor = Colors.blue;
+                      }
                       // create view button widget
                       final viewButton = viewPatientInfo(context, rowData, doc, listSymptoms);
                       final serviceInUse = TextButton(
@@ -187,10 +192,8 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
                       );
 
                       return DataRow(cells: [
-                        DataCell(Center(child: Text(rowData['Status']))),
+                        DataCell(Center(child: Text(rowData['Status'], style: TextStyle(fontSize:15,fontWeight: FontWeight.bold, color: statusColor ),))),
                         DataCell(Center(child: Text(rowData['Name']))),
-                        DataCell(Center(child: Text(rowData['Age'].toString()))),
-                        DataCell(Center(child: Text(rowData['Sex']))),
                         DataCell(Center(child: Text(rowData['Birthday']))),
                         DataCell(Center(child: Text(rowData['Contact Number'].toString()))),
                         DataCell(Center(child: serviceInUse)),
@@ -312,105 +315,170 @@ class _ViewPatientInformationState extends State<ViewPatientInformation> {
             context: context,
             builder: (context) =>
                 AlertDialog(
-                  title: Text("Patient Information"),
+                  title: Center(child: Text("Patient Information", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),)),
                   content: SingleChildScrollView(
                     //width: double.maxFinite,
                     //scrollDirection: Axis.vertical,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Column(
-                          children: [
-                            Text('Name'),
-                            Text(data['Name'],
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        SizedBox(height: 5,),
-                        Column(
-                          children: [
-                            Text('Age'),
-                            Text(data['Age'].toString(),
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        SizedBox(height: 5,),
-                        Column(
-                          children: [
-                            Text('Sex'),
-                            Text(data['Sex'],
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        SizedBox(height: 5,),
-                        Column(
-                          children: [
-                            Text('Contact Information'),
-                            Text(data['Contact Number'].toString(),
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        SizedBox(height: 5,),
-                        Column(
-                          children: [
-                            Text('Address'),
-                            Text(data['Address'],
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        SizedBox(height: 5,),
-                        Column(
-                          children: [
-                            Text('Main Concerns'),
-                            Text(data['Main Concerns'],
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        SizedBox(height: 5,),
-                        Text('Symptoms'),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: listSymptoms != null
-                              ? listSymptoms.map((s) =>
-                              Text('- $s', style: TextStyle(
-                                  fontWeight: FontWeight.bold)))
-                              .toList()
-                              : [Text('No Symptoms added')],
-                        ),
-                        SizedBox(height: 5,),
-                        Column(
-                          children: [
-                            Text('Triage Result'),
-                            Text(data['triage_result'],
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        SizedBox(height: 5,),
-                        Column(
-                          children: [
-                            Text('Confirmation Status'),
-                            Text(data['Status'],
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        SizedBox(height: 16.0),
-                        Column(
-                          children: [
-                            Text('Mode of Travel'),
-                            Text(data['Travel Mode'],
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        SizedBox(height: 16.0),
-                        Column(
-                          children: [
-                            Text('Accepted Time'),
-                            Text(DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTimeAccepted).toString(),
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        SizedBox(height: 16.0),
-                      ],
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: 450,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start, // Aligns the text on the left
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text.rich(
+                                TextSpan(
+                                  text: 'Name: ',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  children: [
+                                    TextSpan(text: data['Name'], style: TextStyle(fontWeight: FontWeight.normal)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 5,),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text.rich(
+                                    TextSpan(
+                                      text: 'Age: ',
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                      children: [
+                                        TextSpan(text: data['Age'], style: TextStyle(fontWeight: FontWeight.normal)),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(width: 20),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text.rich(
+                                    TextSpan(
+                                      text: 'Sex: ',
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                      children: [
+                                        TextSpan(text: data['Sex'], style: TextStyle(fontWeight: FontWeight.normal)),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 5,),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text.rich(
+                                TextSpan(
+                                  text: 'Birthday: ',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  children: [
+                                    TextSpan(text: data['Birthday'], style: TextStyle(fontWeight: FontWeight.normal)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 5,),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text.rich(
+                                TextSpan(
+                                  text: 'Address: ',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  children: [
+                                    TextSpan(text: data['Address'], style: TextStyle(fontWeight: FontWeight.normal)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 5,),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text.rich(
+                                TextSpan(
+                                  text: 'Main Concerns: ',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  children: [
+                                    TextSpan(text: data['Main Concerns'], style: TextStyle(fontWeight: FontWeight.normal)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 5,),
+                          Text('Symptoms', style: TextStyle(fontWeight: FontWeight.bold)),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: listSymptoms != null
+                                ? listSymptoms.map((s) => Text('- $s', style: TextStyle(fontWeight: FontWeight.normal))).toList()
+                                : [Text('No Symptoms added'),],
+                          ),
+                          SizedBox(height: 5,),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text.rich(
+                                TextSpan(
+                                  text: 'Mode of Transportation: ',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  children: [
+                                    TextSpan(text: data['Travel Mode'], style: TextStyle(fontWeight: FontWeight.normal)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 5,),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text.rich(
+                                TextSpan(
+                                  text: 'Confirmation Status: ',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  children: [
+                                    TextSpan(text: data['Status'], style: TextStyle(fontWeight: FontWeight.normal)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 16.0),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text.rich(
+                                TextSpan(
+                                  text: 'Accepted Time: ',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  children: [
+                                    TextSpan(
+                                        text: DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTimeAccepted).toString(), style: TextStyle(fontWeight: FontWeight.normal)
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 16.0),
+                        ],
+                      ),
                     ),
                   ),
                   actions: [

@@ -219,12 +219,10 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                 scrollDirection: Axis.horizontal,
                 child: DataTable(
                   columns: const <DataColumn>[
+                    DataColumn(label: Text('Triage Result',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
                     DataColumn2(label: Text('Name', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
                     DataColumn(label: Text('Age',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                    DataColumn(label: Text('Gender',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                    DataColumn(label: Text('Birthday',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
                     DataColumn(label: Text('Phone Number',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
-                    DataColumn(label: Text('Triage Result',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
                     DataColumn(label: Text('Full Information',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,))),
                   ],
                   rows: snapshot.data!.docs.map((DocumentSnapshot doc) {
@@ -233,26 +231,40 @@ class _RequestingPatientsState extends State<RequestingPatients> {
                     // Return the corresponding string based on the value of "Triage Result"
                     String triageResult = rowData['triage_result'].toString();
                     List<String> listSymptoms = List<String>.from(rowData['Symptoms']);
+                    Color? triageColor;
 
                     //adding label to triage results category
                     if (rowData['triage_result'] == 'A') {
                       triageResult = 'Emergency Case';
+                      triageColor = Colors.red;
                     } else if (rowData['triage_result'] == 'B') {
                       triageResult = 'Priority Case';
+                      triageColor = Colors.orange;
                     } else if (rowData['triage_result'] == 'C'){
                       triageResult = 'Non-urgent Case';
+                      triageColor = Colors.green;
                     }
+
 
                     // create view button widget
                     final viewButton = viewPatientInfo(context, rowData, doc, triageResult, listSymptoms);
 
                     return DataRow(cells: [
+                      DataCell(
+                        Center(
+                            child: Text(
+                              triageResult,
+                              style: TextStyle(
+                                fontSize:15,
+                                fontWeight: FontWeight.bold,
+                                color: triageColor,
+                              ),
+                            )
+                        ),
+                      ),
                       DataCell(Center(child: Text(rowData['Name']))),
                       DataCell(Center(child: Text(rowData['Age'].toString()))),
-                      DataCell(Center(child: Text(rowData['Sex']))),
-                      DataCell(Center(child: Text(rowData['Birthday']))),
                       DataCell(Center(child: Text(rowData['Contact Number']))),
-                      DataCell(Center(child: Text(triageResult))),
                       DataCell(Center(child: viewButton)),
                     ]);
                   }).toList(),
@@ -308,75 +320,145 @@ class _RequestingPatientsState extends State<RequestingPatients> {
         showDialog(
             context: context,
             builder: (context) => AlertDialog(
-              title: Text("Patient Information"),
+              title: Center(child: Text("Patient Information", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),)),
               content: SingleChildScrollView(
-                //width: double.maxFinite,
                 scrollDirection: Axis.vertical,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start, // Aligns the text on the left
                   children: [
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Name'),
-                        Text(data['Name'], style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text.rich(
+                          TextSpan(
+                            text: 'Name: ',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                            children: [
+                              TextSpan(text: data['Name'], style: TextStyle(fontWeight: FontWeight.normal)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 5,),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text.rich(
+                              TextSpan(
+                                text: 'Age: ',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                                children: [
+                                  TextSpan(text: data['Age'], style: TextStyle(fontWeight: FontWeight.normal)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(width: 20),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text.rich(
+                              TextSpan(
+                                text: 'Sex: ',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                                children: [
+                                  TextSpan(text: data['Sex'], style: TextStyle(fontWeight: FontWeight.normal)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                     SizedBox(height: 5,),
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Age'),
-                        Text(data['Age'],style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text.rich(
+                          TextSpan(
+                            text: 'Main Concerns: ',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                            children: [
+                              TextSpan(text: data['Main Concerns'], style: TextStyle(fontWeight: FontWeight.normal)),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                     SizedBox(height: 5,),
-                    Column(
-                      children: [
-                        Text('Sex'),
-                        Text(data['Sex'],style: TextStyle(fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                    SizedBox(height: 5,),
-                    Column(
-                      children: [
-                        Text('Main Concerns'),
-                        Text(data['Main Concerns'],style: TextStyle(fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                    SizedBox(height: 5,),
-                    Text('Symptoms'),
+                    Text('Symptoms', style: TextStyle(fontWeight: FontWeight.bold)),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: listSymptoms != null
-                          ? listSymptoms.map((s) => Text('- $s',style: TextStyle(fontWeight: FontWeight.bold))).toList()
-                          : [Text('No Symptoms added')],
+                          ? listSymptoms.map((s) => Text('- $s', style: TextStyle(fontWeight: FontWeight.normal))).toList()
+                          : [Text('No Symptoms added'),],
                     ),
                     SizedBox(height: 5,),
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Triage Result'),
-                        Text(triageResult,style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text.rich(
+                          TextSpan(
+                            text: 'Triage Result: ',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                            children: [
+                              TextSpan(text: triageResult, style: TextStyle(fontWeight: FontWeight.normal)),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                     SizedBox(height: 5,),
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Mode of Transportation'),
-                        Text(data['Travel Mode'],style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text.rich(
+                          TextSpan(
+                            text: 'Mode of Transportation: ',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                            children: [
+                              TextSpan(text: data['Travel Mode'], style: TextStyle(fontWeight: FontWeight.normal)),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                     SizedBox(height: 5,),
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Confirmation Status'),
-                        Text(data['Status'],style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text.rich(
+                          TextSpan(
+                            text: 'Confirmation Status: ',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                            children: [
+                              TextSpan(text: data['Status'], style: TextStyle(fontWeight: FontWeight.normal)),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                     SizedBox(height: 16.0),
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Requested Time'),
-                        Text(DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTimeRequested).toString(),
-                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text.rich(
+                          TextSpan(
+                            text: 'Requested Time: ',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                            children: [
+                              TextSpan(
+                                text: DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTimeRequested).toString(), style: TextStyle(fontWeight: FontWeight.normal)
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                     SizedBox(height: 16.0),

@@ -97,10 +97,10 @@ class _MyAppState extends State<MyApp> {
           ).apply(
             bodyColor: Colors.black,
           ),
-          pageTransitionsTheme: PageTransitionsTheme(builders: {
-            TargetPlatform.iOS: FadeUpwardsPageTransitionsBuilder(),
-            TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
-          }),
+          // pageTransitionsTheme: PageTransitionsTheme(builders: {
+          //   TargetPlatform.iOS: FadeUpwardsPageTransitionsBuilder(),
+          //   TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+          // }),
           primaryColor: active,
         ),
       );
