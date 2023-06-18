@@ -202,12 +202,17 @@ class _RequestingPatientsState extends State<RequestingPatients> {
       stream: _patientStream,
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
+          return Center(child: Text('Error: ${snapshot.error}'));
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
           print(myString);
-          return CircularProgressIndicator();
+          return Center(child: CircularProgressIndicator());
+        }
+
+        final data = snapshot.data!.docs;
+        if (data.isEmpty) {
+          return Center(child: Text('No pending request', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25), ));
         }
         //Data table
         return SingleChildScrollView(
